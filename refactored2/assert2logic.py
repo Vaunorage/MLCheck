@@ -5,8 +5,6 @@
 
 
 from parsimonious.nodes import NodeVisitor
-from parsimonious.grammar import Grammar
-from itertools import groupby
 import csv as cv
 import re, sys
 import pandas as pd
@@ -94,7 +92,7 @@ class AssertionVisitor(NodeVisitor):
             assertStmnt = ('(assert(not (', self.currentOperator, ' Class', str(0), ' ', str(self.feVal), ')))')
         else:
             assertStmnt = ('(assert(not (', self.currentOperator, self.currentClass[0], ' ', str(self.feVal), ')))')
-        f = open('assertStmnt.txt', 'a')
+        f = open('files/assertStmnt.txt', 'a')
         for x in assertStmnt:
             f.write(x)
         if (self.currentOperator == 'not(= '):
@@ -110,7 +108,7 @@ class AssertionVisitor(NodeVisitor):
         self.checkFeConsist()
         self.checkModelName()
         assertStmnt = ('(assert(not (', self.currentOperator, self.currentClass[0], ' ', self.currentClass[1], ')))')
-        f = open('assertStmnt.txt', 'a')
+        f = open('files/assertStmnt.txt', 'a')
         f.write('\n')
         for x in assertStmnt:
             f.write(x)
@@ -139,7 +137,7 @@ class AssertionVisitor(NodeVisitor):
             else:
                 assertStmnt = ('(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], ' 1)', ' ',
                                ' (= ', self.classNameList[1], ' 1)', ')))')
-        f = open('assertStmnt.txt', 'a')
+        f = open('files/assertStmnt.txt', 'a')
         f.write('\n')
         for x in assertStmnt:
             f.write(x)

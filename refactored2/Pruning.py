@@ -5,14 +5,10 @@
 
 import pandas as pd
 import csv as cv
-import sys
-from sklearn import tree
 import numpy as np
-from utils import util
-from sklearn.tree import DecisionTreeClassifier
+from refactored2 import util
 import os
-import re
-from utils import ReadZ3Output
+from refactored2 import ReadZ3Output
 
 
 def getDataType(value, dfOrig, i):

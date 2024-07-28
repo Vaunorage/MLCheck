@@ -6,16 +6,15 @@ import csv as cv
 import numpy as np
 import random as rd
 import sys
+
 sys.path.append("../")
 from parsimonious.nodes import NodeVisitor
 from parsimonious.grammar import Grammar
-from itertools import groupby
 import re
 import os, time
-from refactored2 import trainDecTree, tree2Logic, Pruning, ReadZ3Output, trainDNN
-from refactored2 import assume2logic, assert2logic, processCandCex, util, DNN2logic
+from refactored2 import trainDecTree, tree2Logic, ReadZ3Output
+from refactored2 import processCandCex, util
 from joblib import dump, load
-from refactored2 import PytorchDNNStruct
 
 
 class generateData:
@@ -94,7 +93,7 @@ class generateData:
 
     # Function to take train data as test data
     def generateTestTrain(self, dfTrainData, train_ratio):
-        tst_pm = round((train_ratio * dfTrainData.shape[0])/100)
+        tst_pm = round((train_ratio * dfTrainData.shape[0]) / 100)
         data = dfTrainData.values
         testMatrix = np.zeros(((tst_pm + 1), dfTrainData.shape[1]))
         flg = True
@@ -128,17 +127,17 @@ class dataFrameCreate(NodeVisitor):
 
     def generic_visit(self, node, children):
         pass
-    
+
     def visit_feName(self, node, children):
         self.feName = node.text
-    
+
     def visit_feType(self, node, children):
         self.feType = node.text
-        
+
     def visit_minimum(self, node, children):
         digit = float(re.search(r'\d+', node.text).group(0))
         self.feMinVal = digit
-    
+
     def visit_maximum(self, node, children):
         digit = float(re.search(r'\d+', node.text).group(0))
         self.feMaxVal = digit
@@ -150,33 +149,33 @@ class readXmlFile:
 
     def funcReadXml(self):
         grammar = Grammar(
-        r"""
-    
-        expr             = name / type / minimum / maximum / xmlStartDoc / xmlStartInps / xmlEndInps / xmlStartInp /
-                                                                    xmlEndInp / xmlStartValTag /xmlEndValTag
-        name             = xmlStartNameTag feName xmlEndNameTag
-        type             = xmlStartTypeTag feType xmlEndTypeTag
-        minimum          = xmlStartMinTag number xmlEndMinTag
-        maximum          = xmlStartMaxTag number xmlEndMaxTag
-        xmlStartDoc      = '<?xml version="1.0" encoding="UTF-8"?>'
-        xmlStartInps     = "<Inputs>"
-        xmlEndInps       = "<\Inputs>"
-        xmlStartInp      = "<Input>"
-        xmlEndInp        = "<\Input>"
-        xmlStartNameTag  = "<Feature-name>"
-        xmlEndNameTag    = "<\Feature-name>"
-        xmlStartTypeTag  = "<Feature-type>"
-        xmlEndTypeTag    = "<\Feature-type>"
-        xmlStartValTag   = "<Value>"
-        xmlEndValTag     = "<\Value>"
-        xmlStartMinTag   = "<minVal>"
-        xmlEndMinTag     = "<\minVal>"
-        xmlStartMaxTag   = "<maxVal>"
-        xmlEndMaxTag     = "<\maxVal>"
-        feName           = ~"([a-zA-Z_][a-zA-Z0-9_]*)"
-        feType           = ~"[A-Z 0-9]*"i
-        number           = ~"[+-]?([0-9]*[.])?[0-9]+"
-        """
+            r"""
+        
+            expr             = name / type / minimum / maximum / xmlStartDoc / xmlStartInps / xmlEndInps / xmlStartInp /
+                                                                        xmlEndInp / xmlStartValTag /xmlEndValTag
+            name             = xmlStartNameTag feName xmlEndNameTag
+            type             = xmlStartTypeTag feType xmlEndTypeTag
+            minimum          = xmlStartMinTag number xmlEndMinTag
+            maximum          = xmlStartMaxTag number xmlEndMaxTag
+            xmlStartDoc      = '<?xml version="1.0" encoding="UTF-8"?>'
+            xmlStartInps     = "<Inputs>"
+            xmlEndInps       = "<\Inputs>"
+            xmlStartInp      = "<Input>"
+            xmlEndInp        = "<\Input>"
+            xmlStartNameTag  = "<Feature-name>"
+            xmlEndNameTag    = "<\Feature-name>"
+            xmlStartTypeTag  = "<Feature-type>"
+            xmlEndTypeTag    = "<\Feature-type>"
+            xmlStartValTag   = "<Value>"
+            xmlEndValTag     = "<\Value>"
+            xmlStartMinTag   = "<minVal>"
+            xmlEndMinTag     = "<\minVal>"
+            xmlStartMaxTag   = "<maxVal>"
+            xmlEndMaxTag     = "<\maxVal>"
+            feName           = ~"([a-zA-Z_][a-zA-Z0-9_]*)"
+            feType           = ~"[A-Z 0-9]*"i
+            number           = ~"[+-]?([0-9]*[.])?[0-9]+"
+            """
         )
 
         with open(self.fileName) as f1:
@@ -220,41 +219,41 @@ class makeOracleData:
         with open('PredictClass.csv', 'w', newline='') as csvfile:
             writer = cv.writer(csvfile)
             writer.writerows(predict_class)
-            
+
         for i in range(0, noOfClasses):
-            className = str(dfTest.columns.values[dfTest.shape[1]-noOfClasses+i])
+            className = str(dfTest.columns.values[dfTest.shape[1] - noOfClasses + i])
             for j in range(0, X.shape[0]):
                 dfTest.loc[j, className] = predict_class[j][i]
         dfTest.to_csv('OracleData.csv', index=False, header=True)
 
 
 class multiLabelPropCheck:
-    
+
     def __init__(self, max_samples=None, deadline=None, model=None, no_of_params=None, xml_file='',
-                mul_cex=False, white_box_model=None, no_of_layers=None, layer_size=None, no_of_class=None,
-                no_EPOCHS=None, train_data_available=False, train_data_loc='', model_path='',  no_of_train=None,
+                 mul_cex=False, white_box_model=None, no_of_layers=None, layer_size=None, no_of_class=None,
+                 no_EPOCHS=None, train_data_available=False, train_data_loc='', model_path='', no_of_train=None,
                  train_ratio=None, model_type=None):
-        
+
         self.paramDict = {}
         if max_samples is None:
             self.max_samples = 1000
         else:
             self.max_samples = max_samples
         self.paramDict['max_samples'] = self.max_samples
-        
+
         if deadline is None:
             self.deadline = 500000
         else:
             self.deadline = deadline
         self.paramDict['deadlines'] = self.deadline
-        
+
         if white_box_model is None:
             self.white_box_model = 'Decision tree'
         else:
             self.white_box_model = white_box_model
-        self.paramDict['white_box_model'] = self.white_box_model    
+        self.paramDict['white_box_model'] = self.white_box_model
         self.paramDict['no_of_class'] = no_of_class
-        
+
         if self.white_box_model is 'DNN':
             if (no_of_layers is None) and (layer_size is None):
                 self.no_of_layers = 2
@@ -265,25 +264,25 @@ class multiLabelPropCheck:
             elif layer_size is None:
                 self.no_of_layers = no_of_layers
                 self.layer_size = 64
-            elif (layer_size > 100) or(no_of_layers > 5):
+            elif (layer_size > 100) or (no_of_layers > 5):
                 raise Exception("White-box model is too big to translate")
-                sys.exit(1)    
+                sys.exit(1)
             else:
                 self.no_of_layers = no_of_layers
                 self.layer_size = layer_size
             self.paramDict['no_of_layers'] = self.no_of_layers
-            self.paramDict['layer_size'] = self.layer_size 
-           
+            self.paramDict['layer_size'] = self.layer_size
+
         if no_EPOCHS is None:
             self.paramDict['no_EPOCHS'] = 100
         else:
             self.paramDict['no_EPOCHS'] = no_EPOCHS
-            
+
         if (no_of_params is None) or (no_of_params > 3):
             raise Exception("Please provide a value for no_of_params or the value of it is too big")
         else:
             self.no_of_params = no_of_params
-        self.paramDict['no_of_params'] = self.no_of_params   
+        self.paramDict['no_of_params'] = self.no_of_params
         self.paramDict['mul_cex_opt'] = mul_cex
         self.paramDict['multi_label'] = True
 
@@ -309,12 +308,6 @@ class multiLabelPropCheck:
                 self.model = model
                 dump(self.model, 'Model/MUT.joblib')
 
-        elif model_type == 'Pytorch':
-            self.paramDict['model_type'] = 'Pytorch'
-            self.paramDict['model_path'] = model_path
-            self.model = PytorchDNNStruct.Net()
-            self.model = torch.load(model_path)
-            self.model.eval()
         else:
             raise Exception("Please provide the type of the model (Pytorch/sklearn)")
 
@@ -345,7 +338,7 @@ class multiLabelPropCheck:
 
         genData = readXmlFile(self.xml_file)
         genData.funcReadXml()
-        genOrcl = makeOracleData(self.model, train_data_available, train_data_loc) 
+        genOrcl = makeOracleData(self.model, train_data_available, train_data_loc)
         genOrcl.funcGenOracle()
 
 
@@ -357,16 +350,16 @@ class runChecker:
             self.paramDict = dict(reader)
         if 'model_path' in self.paramDict:
             self.model = load(self.paramDict['model_path'])
-        else:    
-            self.model = load('Model/MUT.joblib')     
+        else:
+            self.model = load('Model/MUT.joblib')
         with open('TestSet.csv', 'w', newline='') as csvfile:
-            fieldnames = self.df.columns.values  
+            fieldnames = self.df.columns.values
             writer = cv.writer(csvfile)
             writer.writerow(fieldnames)
         with open('CexSet.csv', 'w', newline='') as csvfile:
-            fieldnames = self.df.columns.values  
+            fieldnames = self.df.columns.values
             writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)  
+            writer.writerow(fieldnames)
         self.max_samples = int(self.paramDict['max_samples'])
         self.no_of_params = int(self.paramDict['no_of_params'])
         self.mul_cex = self.paramDict['mul_cex_opt']
@@ -374,9 +367,9 @@ class runChecker:
         self.white_box = self.paramDict['white_box_model']
         self.no_of_class = int(self.paramDict['no_of_class'])
 
-    def get_index(self,name):
+    def get_index(self, name):
         df = pd.read_csv('OracleData.csv')
-        for i in range(0, df.shape[1]-1):
+        for i in range(0, df.shape[1] - 1):
             if name == df.columns.values[i]:
                 return i
 
@@ -391,8 +384,8 @@ class runChecker:
         flag_per_obj = False
         index = self.df.shape[1] - self.no_of_class
         for i in range(0, self.no_of_class):
-            classNameList.append(str(self.df.columns.values[index+i]))
-        with open('assertStmnt.txt') as f1:
+            classNameList.append(str(self.df.columns.values[index + i]))
+        with open('files/assertStmnt.txt') as f1:
             file_content = f1.readlines()
         statement = [x.strip() for x in file_content]
 
@@ -416,7 +409,7 @@ class runChecker:
                     print(data_oracle[i])
                     with open('CexSet.csv', 'a', newline='') as csvfile:
                         writer = cv.writer(csvfile)
-                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1]-self.no_of_class)))
+                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1] - self.no_of_class)))
                     return True
                 else:
                     return False
@@ -427,7 +420,7 @@ class runChecker:
                     print(data_oracle[i])
                     with open('CexSet.csv', 'a', newline='') as csvfile:
                         writer = cv.writer(csvfile)
-                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1]-self.no_of_class)))
+                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1] - self.no_of_class)))
                     return True
                 else:
                     return False
@@ -438,7 +431,7 @@ class runChecker:
                     print(data_oracle[i])
                     with open('CexSet.csv', 'a', newline='') as csvfile:
                         writer = cv.writer(csvfile)
-                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1]-self.no_of_class)))
+                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1] - self.no_of_class)))
                     return True
                 else:
                     return False
@@ -458,12 +451,12 @@ class runChecker:
         dataCex = dfCexSet.values
         X = dataCex[:, :-self.no_of_class]
         predict_class = self.model.predict(X)
-        index = self.df.shape[1]-self.no_of_class
+        index = self.df.shape[1] - self.no_of_class
         for i in range(0, self.no_of_class):
-            className = str(self.df.columns.values[index+i])
+            className = str(self.df.columns.values[index + i])
             for j in range(0, X.shape[0]):
                 dfCexSet.loc[j, className] = predict_class[j][i]
-        dfCexSet.to_csv('CexSet.csv', index = False, header = True)
+        dfCexSet.to_csv('CexSet.csv', index=False, header=True)
 
     def runPropCheck(self):
         retrain_flag = False
@@ -472,15 +465,15 @@ class runChecker:
         count = 0
         satFlag = False
         start_time = time.time()
-        
+
         if self.white_box == 'DNN':
             self.runWithDNN()
-        else:    
+        else:
             while count < self.max_samples:
-                count = count+1
+                count = count + 1
                 print('count in multi:', count)
                 tree = trainDecTree.functrainDecTree(self.no_of_class)
-                
+
                 tree2Logic.functree2LogicMain(tree, self.no_of_params)
                 util.storeAssumeAssert('DecSmt.smt2')
                 util.addSatOpt('DecSmt.smt2')
@@ -492,46 +485,46 @@ class runChecker:
                         return 0
                     elif (count != 0) and (self.mul_cex == 'True'):
                         dfCexSet = pd.read_csv('CexSet.csv')
-                        if round(dfCexSet.shape[0]/self.no_of_params) == 0:
+                        if round(dfCexSet.shape[0] / self.no_of_params) == 0:
                             print('No CEX is found')
                             return 0
-                        print('Total number of cex found is:', round(dfCexSet.shape[0]/self.no_of_params))
+                        print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                         self.addModelPred()
-                        return round(dfCexSet.shape[0]/self.no_of_params) 
+                        return round(dfCexSet.shape[0] / self.no_of_params)
                     elif (count != 0) and (self.mul_cex == 'False'):
-                        print('No Cex is found after '+str(count)+' no. of trials')
+                        print('No Cex is found after ' + str(count) + ' no. of trials')
                         return 0
-                    
+
                 else:
                     processCandCex.funcAddCex2CandidateSet()
                     processCandCex.funcAddCexPruneCandidateSet(tree)
                     processCandCex.funcCheckCex()
-                    #Increase the count if no further candidate cex has been found
+                    # Increase the count if no further candidate cex has been found
                     dfCand = pd.read_csv('Cand-set.csv')
-                    if round(dfCand.shape[0]/self.no_of_params) == 0:
+                    if round(dfCand.shape[0] / self.no_of_params) == 0:
                         count_cand_zero += 1
                         if count_cand_zero == MAX_CAND_ZERO:
                             if self.mul_cex == 'True':
                                 dfCexSet = pd.read_csv('CexSet.csv')
-                                print('Total number of cex found is:', round(dfCexSet.shape[0]/self.no_of_params))
-                                if round(dfCexSet.shape[0]/self.no_of_params) > 0:
+                                print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
+                                if round(dfCexSet.shape[0] / self.no_of_params) > 0:
                                     self.addModelPred()
-                                return round(dfCexSet.shape[0]/self.no_of_params)
+                                return round(dfCexSet.shape[0] / self.no_of_params)
                             else:
                                 print('No CEX is found by the checker')
                                 return 0
                     else:
-                        count = count + round(dfCand.shape[0]/self.no_of_params)
-                    
+                        count = count + round(dfCand.shape[0] / self.no_of_params)
+
                     data = dfCand.values
                     X = data[:, :-self.no_of_class]
                     y = data[:, -self.no_of_class:]
                     if dfCand.shape[0] % self.no_of_params == 0:
                         arr_length = dfCand.shape[0]
                     else:
-                        arr_length = dfCand.shape[0]-1    
+                        arr_length = dfCand.shape[0] - 1
                     testIndx = 0
-                    
+
                     while testIndx < arr_length:
                         temp_count = 0
                         temp_store = []
@@ -547,19 +540,19 @@ class runChecker:
                                 testIndx += 1
                         if temp_count == self.no_of_params:
                             if self.mul_cex == 'True':
-                                with open('CexSet.csv', 'a', newline='') as csvfile:    
+                                with open('CexSet.csv', 'a', newline='') as csvfile:
                                     writer = cv.writer(csvfile)
                                     writer.writerows(temp_store)
                             else:
                                 print('A counter example is found, check it in CexSet.csv file: ', temp_store)
-                                with open('CexSet.csv', 'a', newline='') as csvfile:    
+                                with open('CexSet.csv', 'a', newline='') as csvfile:
                                     writer = cv.writer(csvfile)
                                     writer.writerows(temp_store)
-                                self.addModelPred()    
+                                self.addModelPred()
                                 return 1
                         else:
                             util.funcAdd2Oracle(temp_add_oracle)
-                        
+
                     if retrain_flag:
                         util.funcCreateOracle(self.no_of_class, True, self.model)
                     if (time.time() - start_time) > self.deadline:
@@ -567,10 +560,9 @@ class runChecker:
                         break
 
             dfCexSet = pd.read_csv('CexSet.csv')
-            if (round(dfCexSet.shape[0]/self.no_of_params) > 0) and (count >= self.max_samples):
+            if (round(dfCexSet.shape[0] / self.no_of_params) > 0) and (count >= self.max_samples):
                 self.addModelPred()
-                print('Total number of cex found is:', round(dfCexSet.shape[0]/self.no_of_params))
+                print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                 print('No. of Samples looked for counter example has exceeded the max_samples limit')
             else:
                 print('No counter example has been found')
-            

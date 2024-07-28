@@ -1,16 +1,10 @@
 import pandas as pd
 import csv as cv
-import numpy as np
-import random as rd
 from parsimonious.nodes import NodeVisitor
 from parsimonious.grammar import Grammar
-from itertools import groupby
 import re
-from sklearn.ensemble import RandomForestClassifier
-import os
-
 from paths import HERE
-from utils import trainDecTree, tree2Logic, Pruning, ReadZ3Output, util
+from refactored2 import util
 
 # In[73]:
 

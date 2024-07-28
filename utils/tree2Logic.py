@@ -2,19 +2,11 @@
 
 import pandas as pd
 import csv as cv
-import sys
-from sklearn import tree
 import numpy as np
-
-from sklearn.tree import DecisionTreeClassifier
-
-import fileinput
-import os
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-import pydot 
 import re
 
 
@@ -27,7 +19,6 @@ def tree_to_code(tree, feature_names):
         feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
         for i in tree_.feature
     ]
-    #print("def tree({}):".format(", ".join(feature_names)))
     f.write("def tree({}):".format(", ".join(feature_names)))
     f.write("\n")
     
@@ -39,41 +30,33 @@ def tree_to_code(tree, feature_names):
             name = feature_name[node]
             threshold = tree_.threshold[node]
             
-            #print("{}if {} <= {}:".format(indent, name, threshold))
             f.write("{}if {} <= {}:".format(indent, name, threshold))
             f.write("\n")
             
-            #print("{}".format(indent)+"{")
             f.write("{}".format(indent)+"{")
             f.write("\n")
             
             recurse(tree_.children_left[node], depth + 1)
             
-            #print("{}".format(indent)+"}")
             f.write("{}".format(indent)+"}")
             f.write("\n")
             
             
-            #print("{}else:  # if {} > {}".format(indent, name, threshold))
             f.write("{}else:  # if {} > {}".format(indent, name, threshold))
             f.write("\n")
             
-            #print("{}".format(indent)+"{")
             f.write("{}".format(indent)+"{")
             f.write("\n")
             
             recurse(tree_.children_right[node], depth + 1)
             
-            #print("{}".format(indent)+"}")
             f.write("{}".format(indent)+"}")
             f.write("\n")
             
         else:
-            #print("{}return {}".format(indent, np.argmax(tree_.value[node][0])))
             f.write("{}return {}".format(indent, np.argmax(tree_.value[node][0])))
             f.write("\n")
-            #print("{}".format(indent)+"}")
-            
+
     
     recurse(0, 1)
     f.close() 
@@ -96,7 +79,7 @@ def file_len(fname):
 
 def funcConvBranch(single_branch, dfT, rep):
     
-    f = open('DecSmt.smt2', 'a') 
+    f = open('DecSmt.smt2', 'a')
     f.write("(assert (=> (and ")
     for i in range(0, len(single_branch)):
         temp_Str = single_branch[i]
@@ -222,7 +205,7 @@ def funcConv(dfT, no_of_instances):
     
     f = open('DecSmt.smt2', 'w')
     for j in range(0, no_of_instances):
-        for i in range (0, dfT.columns.values.shape[0]-1):
+        for i in range(0, dfT.columns.values.shape[0]-1):
             tempStr = dfT.columns.values[i]
             ''' 
             fe_type = dfT.dtypes[i]

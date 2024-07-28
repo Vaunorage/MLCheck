@@ -1,4 +1,3 @@
-from joblib import dump, load
 import numpy as np
 import csv as cv
 import pandas as pd
@@ -89,7 +88,7 @@ def storeAssumeAssert(file_name, no_assumption=False):
             f2_content = f2.readlines()
         f2_content = list(set([x.strip() for x in f2_content]))
         addContent(file_name, f2_content)
-    with open('assertStmnt.txt') as f3:
+    with open('files/assertStmnt.txt') as f3:
         f3_content = f3.readlines()
     f3_content = list(set([x.strip() for x in f3_content]))
     addContent(file_name, f3_content)

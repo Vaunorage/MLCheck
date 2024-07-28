@@ -1,25 +1,14 @@
 
+
 import pandas as pd
 import csv as cv
-import sys
-from sklearn import tree
 import numpy as np
 
-from sklearn.tree import DecisionTreeClassifier
-
-import fileinput
-
-import os
-import json
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-import pydot 
 import re
-
-
-# In[2]:
 
 
 from sklearn.tree import _tree
@@ -34,15 +23,13 @@ def tree_to_code(tree, feature_names):
     f.write("def tree({}):".format(", ".join(feature_names)))
     f.write("\n")
     
-    pred_arr = np.zeros((tree_.n_outputs))
-    
+
     def recurse(node, depth):
         indent = "  " * depth
         
         if tree_.feature[node] != _tree.TREE_UNDEFINED:
             name = feature_name[node]
             threshold = tree_.threshold[node]
-            threshold = round(threshold,5)
             
             f.write("{}if {} <= {}:".format(indent, name, threshold))
             f.write("\n")
@@ -54,6 +41,7 @@ def tree_to_code(tree, feature_names):
             
             f.write("{}".format(indent)+"}")
             f.write("\n")
+            
             
             f.write("{}else:  # if {} > {}".format(indent, name, threshold))
             f.write("\n")
@@ -67,11 +55,9 @@ def tree_to_code(tree, feature_names):
             f.write("\n")
             
         else:
-            for i in range(0, tree_.n_outputs):
-                pred_arr[i] = np.argmax(tree_.value[node][i])   
-            f.write("{}return {}".format(indent, pred_arr))
+            f.write("{}return {}".format(indent, np.argmax(tree_.value[node][0])))
             f.write("\n")
-            
+
     
     recurse(0, 1)
     f.close() 
@@ -88,12 +74,14 @@ def file_len(fname):
     return i + 1
 
 
-def funcConvBranch(single_branch, dfT, rep, instances):
+# In[4]:
+
+
+
+def funcConvBranch(single_branch, dfT, rep):
     
-    f3 = open('DecSmt.smt2', 'a')
-    f3.write("(assert (=> (and ")
-    
-    noOfAttr = dfT.shape[1]
+    f = open('DecSmt.smt2', 'a')
+    f.write("(assert (=> (and ")
     for i in range(0, len(single_branch)):
         temp_Str = single_branch[i]
         if('if' in temp_Str):
@@ -102,7 +90,10 @@ def funcConvBranch(single_branch, dfT, rep, instances):
                 if(dfT.columns.values[j] in temp_Str):
                     fe_name = str(dfT.columns.values[j])
                     fe_index = j
+                    
+            
             data_type = str(dfT.dtypes[fe_index])
+            
             if('<=' in temp_Str):
                 sign = '<='
             elif('<=' in temp_Str):
@@ -111,61 +102,42 @@ def funcConvBranch(single_branch, dfT, rep, instances):
                 sign = '>'
             elif('>=' in temp_Str):
                 sign = '>='  
-            #elif(('=') or ('==') in temp_Str):
-            #    sign = '='
-            
-            split_arr = temp_Str.split(sign)
-            split_arr = split_arr[1].strip()
-            split_arr = split_arr.strip(':')
-            
-            if('int' in data_type):
-                #digit = int(re.search(r'\d+', temp_Str).group(0))
-                digit = int(split_arr)
-            elif('float' in data_type):
-                #digit = float(re.search(r'\d+', temp_Str).group(0))
-                digit = float(split_arr)
-            digit = str(digit)
-            if(instances == 1):
-                f3.write("(" + sign + " "+ fe_name +" " + digit +") ")  
-            else:
-                f3.write("(" + sign + " "+ fe_name +str(rep)+" " + digit +") ")
            
+                
+            if('int' in data_type):
+                digit = int(re.search(r'\d+', temp_Str).group(0))
+            elif('float' in data_type):
+                digit = float(re.search(r'\d+', temp_Str).group(0))
+            digit = str(digit)
+            f.write("(" + sign + " "+ fe_name +str(rep)+" " + digit +") ") 
+            #f.write('\n')
+                     
         elif('return' in temp_Str):
-            class_array = np.array(re.findall(r'\d+', temp_Str))
-            class_array =[int(k) for k in class_array]
-            f3.write(") (and ")
-            for k in range(0, len(class_array)):
-                feature_name = dfT.columns.values[noOfAttr-len(class_array) +k]
-                if(instances == 1):
-                    f3.write("(= "+feature_name+" "+str(class_array[k])+")") 
-                else:
-                    f3.write("(= "+feature_name+str(rep)+" "+str(class_array[k])+")")          
-            f3.write(")))")
-            f3.write('\n')
-            
-    f3.close()
-    
+            digit_class = int(re.search(r'\d+', temp_Str).group(0))
+            digit_class = str(digit_class)
+            f.write(") (= Class"+str(rep)+" "+digit_class +")))")
+            f.write('\n')
+    f.close()
 
 
-def funcGetBranch(sinBranch, dfT, rep, instances):
+def funcGetBranch(sinBranch, dfT, rep):
     flg = False
     for i in range (0, len(sinBranch)):
         tempSt = sinBranch[i]
         if('return' in tempSt):
             flg = True
-            funcConvBranch(sinBranch, dfT, rep, instances)
+            funcConvBranch(sinBranch, dfT, rep)
+            #print(sinBranch)
 
-def funcGenBranch(dfT, rep, instances):
- 
+
+def funcGenBranch(dfT, rep):
+    
+    
     with open('TreeOutput.txt') as f1:
         file_content = f1.readlines()
     file_content = [x.strip() for x in file_content] 
     
     f1.close()
-    with open('param_dict.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        paramDict = dict(reader)
-    noOfAttr = dfT.shape[1]-int(paramDict['no_of_class']) 
     
     noOfLines = file_len('TreeOutput.txt')
     temp_file_cont = ["" for x in range(noOfLines)]
@@ -175,47 +147,54 @@ def funcGenBranch(dfT, rep, instances):
     while(i < noOfLines):
         
         j = k-1
-        if(temp_file_cont[j] == '}'):
-            funcGetBranch(temp_file_cont, dfT, rep, instances)
-            while(True):
+        if temp_file_cont[j] == '}':
+            funcGetBranch(temp_file_cont, dfT, rep)
+            while True:
                 if(temp_file_cont[j] == '{'):
                     temp_file_cont[j] = ''
                     temp_file_cont[j-1] = ''
                     j = j-1
                     break  
                 elif(j>=0):    
+                    #print(temp_file_cont.pop(i))
                     temp_file_cont[j] = ''
                     j = j-1
+        
             k = j    
+            
         else:    
             temp_file_cont[k] = file_content[i]
+            #print(temp_file_cont)
             k = k+1
             i = i+1
-           
+            #print(temp_file_cont.shape)
+    
+    #return temp_file_cont
+    #print(temp_file_cont)
+  
     if('return' in file_content[1]):
-        class_array = np.array(re.findall(r'\d+', file_content[1]))
+        digit = int(re.search(r'\d+', file_content[1]).group(0))
         f = open('DecSmt.smt2', 'a')
-        class_array =[int(k) for k in class_array]
-        f.write("(assert (and ")
-        for k in range(0, len(class_array)):
-            feature_name = dfT.columns.values[noOfAttr-len(class_array) +k]
-            if(instances == 1):
-                f.write("(= "+feature_name+" "+str(class_array[k])+")")
-            else:
-                f.write("(= "+feature_name+str(rep)+" "+str(class_array[k])+")")           
-            
-        f.write("))")
-        f.write('\n')
+        f.write("(assert (= Class"+str(rep)+" "+str(digit)+"))")
+        f.write("\n")
+        f.close()
     else:    
-        funcGetBranch(temp_file_cont, dfT, rep, instances)
+        funcGetBranch(temp_file_cont, dfT, rep)
+
 
 
 def funcConv(dfT, no_of_instances):
-
+    
+    #s = Stack()
+    
     temp_content = ['']
     rep = 0
     min_val = 0
     max_val = 0
+
+    with open('feNameType.csv') as csv_file:
+        reader = cv.reader(csv_file)
+        feName_type = dict(reader) 
     
     with open('TreeOutput.txt') as f1:
         content = f1.readlines()
@@ -227,33 +206,34 @@ def funcConv(dfT, no_of_instances):
     
     f = open('DecSmt.smt2', 'w')
     for j in range(0, no_of_instances):
-        for i in range (0, dfT.columns.values.shape[0]):
+        for i in range(0, dfT.columns.values.shape[0]-1):
             tempStr = dfT.columns.values[i]
+            ''' 
             fe_type = dfT.dtypes[i]
             fe_type = str(fe_type)
-        
+            '''
+            fe_type = feName_type[tempStr]
+
             min_val = dfT.iloc[:, i].min()
             max_val = dfT.iloc[:, i].max() 
         
             if('int' in fe_type):
-                if(no_of_instances == 1):
-                    f.write("(declare-fun " + tempStr+" () Int)")
-                else:
-                    f.write("(declare-fun " + tempStr+str(j)+ " () Int)")
+                f.write("(declare-fun " + tempStr+str(j)+ " () Int)")
                 f.write('\n')
                 #adding range
-                #f2.write("(assert (and (>= "+tempStr+" "+str(min_val)+")"+" "+"(<= "+tempStr+"1 "+str(max_val)+")))")
+                #f.write("(assert (and (>= "+tempStr+str(j)+" "+str(min_val)+")"+" "+"(<= "+tempStr+str(j)+" "+str(max_val)+")))")
                 f.write('\n')
             elif('float' in fe_type):
-                if(no_of_instances == 1):
-                    f.write("(declare-fun " + tempStr+" () Real)")
-                else:
-                    f.write("(declare-fun " + tempStr+str(j)+ " () Real)")
+                f.write("(declare-fun " + tempStr+str(j)+ " () Real)")
                 f.write('\n')
                 #Adding range
-                #f2.write("(assert (and (>= "+tempStr+"1 "+str(round(min_val, 2))+")"+" "+"(<= "+tempStr+"1 "+str(round(max_val, 2))+")))")
+                #f.write("(assert (and (>= "+tempStr+str(j)+" "+str(round(min_val, 2))+")"+" "+"(<= "+tempStr+str(j)+" "+str(round(max_val, 2))+")))")
                 f.write('\n') 
         f.write("; "+str(j)+"th element")
+        f.write('\n')
+    
+    for i in range(0, no_of_instances):
+        f.write("(declare-fun Class"+str(i)+ " () Int)")
         f.write('\n')
 
     #Writing the functions for computing absolute integer & real value
@@ -261,8 +241,7 @@ def funcConv(dfT, no_of_instances):
     f.write('  (ite (>= x 0) x (- x))) \n')
 
     f.write('(define-fun absoluteReal ((x Real)) Real \n')
-    f.write('  (ite (>= x 0) x (- x))) \n')
-        
+    f.write('  (ite (>= x 0) x (- x))) \n') 
     f.close()
     
     #Calling function to get the branch and convert it to z3 form,  creating alias
@@ -270,9 +249,8 @@ def funcConv(dfT, no_of_instances):
         f = open('DecSmt.smt2', 'a')
         f.write('\n;-----------'+str(i)+'-----------number instance-------------- \n')
         f.close()
-        funcGenBranch(dfT, i, no_of_instances)
-   
-  
+        funcGenBranch(dfT, i)
+    
 
 def funcGenSMTFairness(df, no_of_instances):
     funcConv(df, no_of_instances)
@@ -281,7 +259,5 @@ def functree2LogicMain(tree, no_of_instances):
     df = pd.read_csv('OracleData.csv')
     tree_to_code(tree, df.columns)
     funcGenSMTFairness(df, no_of_instances)
-
-
     
 
