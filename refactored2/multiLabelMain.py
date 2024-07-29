@@ -16,7 +16,7 @@ from refactored2 import trainDecTree, tree2Logic, ReadZ3Output
 from refactored2 import processCandCex, util
 from joblib import dump, load
 
-from refactored2.util import local_load
+from refactored2.util import local_load, local_save
 
 
 class generateData:
@@ -299,10 +299,11 @@ class multiLabelPropCheck:
         self.paramDict['train_data_loc'] = train_data_loc
 
         try:
-            with open('files/param_dict.csv', 'w') as csv_file:
-                writer = cv.writer(csv_file)
-                for key, value in self.paramDict.items():
-                    writer.writerow([key, value])
+            # with open('files/param_dict.csv', 'w') as csv_file:
+            #     writer = cv.writer(csv_file)
+            #     for key, value in self.paramDict.items():
+            #         writer.writerow([key, value])
+            local_save(self.paramDict, 'param_dict', force_rewrite=True)
         except IOError:
             print("I/O error")
 

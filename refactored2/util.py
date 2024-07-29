@@ -8,24 +8,36 @@ import os
 
 from paths import HERE
 
+files_folder = HERE.joinpath(f"refactored2/files")
 
-def local_save(var, var_name):
-    var_path = HERE.joinpath(f"refactored2/files/{var_name}")
+
+def delete_file(var_name):
+    var_path = files_folder.joinpath(var_name)
+    if var_path.exists() and var_path.is_file():
+        var_path.unlink()
+
+
+def local_save(var, var_name, force_rewrite=False):
+    var_path = files_folder.joinpath(var_name)
     var_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
 
     if isinstance(var, pd.DataFrame):
         var_path = var_path.with_suffix('.csv')
-        if var_path.exists():
+        if var_path.exists() and not force_rewrite:
             var.to_csv(var_path, mode='a', header=False, index=False)
         else:
             var.to_csv(var_path, index=False)
     elif isinstance(var, dict):
         var_path = var_path.with_suffix('.json')
-        with open(var_path, 'w') as file:
+        with open(var_path, 'w' if force_rewrite else 'a') as file:
             json.dump(var, file)
+    elif isinstance(var, str):
+        var_path = var_path.with_suffix('.txt')
+        with open(var_path, 'w' if force_rewrite else 'a') as file:
+            file.write(var + '\n')
     else:
         var_path = var_path.with_suffix('.pkl')
-        if var_path.exists():
+        if var_path.exists() and not force_rewrite:
             with open(var_path, 'rb') as file:
                 existing_data = pickle.load(file)
             combined_data = existing_data + var if isinstance(existing_data, list) else [existing_data, var]
@@ -37,9 +49,10 @@ def local_save(var, var_name):
 
 
 def local_load(var_name):
-    var_path_csv = HERE.joinpath(f"refactored2/files/{var_name}.csv")
-    var_path_json = HERE.joinpath(f"refactored2/files/{var_name}.json")
-    var_path_pkl = HERE.joinpath(f"refactored2/files/{var_name}.pkl")
+    var_path_csv = files_folder.joinpath(f"{var_name}.csv")
+    var_path_json = files_folder.joinpath(f"{var_name}.json")
+    var_path_pkl = files_folder.joinpath(f"{var_name}.pkl")
+    var_path_txt = files_folder.joinpath(f"{var_name}.txt")
 
     if var_path_json.exists():
         with open(var_path_json, 'r') as file:
@@ -49,6 +62,9 @@ def local_load(var_name):
     elif var_path_pkl.exists():
         with open(var_path_pkl, 'rb') as file:
             data = pickle.load(file)
+    elif var_path_txt.exists():
+        with open(var_path_txt, 'r') as file:
+            data = file.readlines()
     else:
         raise FileNotFoundError(f"No saved data found with base name '{var_name}'")
 
@@ -118,9 +134,9 @@ def addSatOpt(file_name):
 
 def storeAssumeAssert(file_name, no_assumption=False):
     if not no_assumption:
-        with open('files/assumeStmnt.txt') as f2:
-            f2_content = f2.readlines()
-        f2_content = list(set([x.strip() for x in f2_content]))
+        # with open('files/assumeStmnt.txt') as f2:
+        #     f2_content = f2.readlines()
+        f2_content = local_load('assumeStmnt')
         addContent(file_name, f2_content)
     with open('files/assertStmnt.txt') as f3:
         f3_content = f3.readlines()

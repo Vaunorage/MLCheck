@@ -191,7 +191,8 @@ class propCheck:
                 self.paramDict['no_of_class'] = no_of_class
             multiLabelMain.multiLabelPropCheck(no_of_params=no_of_params, max_samples=max_samples, deadline=deadline,
                                                model=model, no_of_class=no_of_class, mul_cex=mul_cex,
-                                               white_box_model=white_box_model, no_EPOCHS=no_EPOCHS, model_path=model_path,
+                                               white_box_model=white_box_model, no_EPOCHS=no_EPOCHS,
+                                               model_path=model_path,
                                                no_of_train=None, train_ratio=None, model_type=model_type)
         else:
             if max_samples is None:
@@ -271,11 +272,7 @@ class propCheck:
             self.paramDict['train_data_loc'] = train_data_loc
 
             try:
-                with open('files/param_dict.csv', 'w') as csv_file:
-                    writer = cv.writer(csv_file)
-                    for key, value in self.paramDict.items():
-                        writer.writerow([key, value])
-                local_save(self.paramDict, 'param_dict')
+                local_save(self.paramDict, 'param_dict', force_rewrite=True)
             except IOError:
                 print("I/O error")
 
@@ -285,10 +282,7 @@ class propCheck:
             minValArr = df.min().tolist()
             maxValArr = df.max().tolist()
 
-            # with open('files/feNameType.csv') as csv_file:
-            #     reader = cv.reader(csv_file)
-            #     feName_type = dict(reader)
-            local_save(df.dtypes.apply(str).to_dict(), 'feNameType')
+            local_save(df.dtypes.apply(str).to_dict(), 'feNameType', force_rewrite=True)
 
             genDataObj = generateData(feNameArr, feTypeArr, minValArr, maxValArr)
             genDataObj.funcGenerateTestData()

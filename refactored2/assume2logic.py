@@ -158,7 +158,7 @@ class AssumptionVisitor(NodeVisitor):
         self.arithOperator.append(node.text)
 
     def visit_logic_op(self, node, children):
-        if ('!=' in node.text):
+        if '!=' in node.text:
             self.logicOperator = 'not(='
         else:
             self.logicOperator = node.text
@@ -167,9 +167,8 @@ class AssumptionVisitor(NodeVisitor):
         self.numList.append(node.text)
 
     def visit_classVar(self, node, children):
-        if (self.varInd == True):
+        if self.varInd:
             raise Exception("Feature indexes given twice")
-            sys.exit(1)
         self.classVarList.append(node.text)
         self.checkIndexConstncy()
         self.feIndex = int(re.search(r'\d+', node.text).group(0))
@@ -201,81 +200,59 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr3(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        f = open('files/assumeStmnt.txt', 'a')
-        f.write('\n')
-        f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) +
-                " " + str(self.feValue) + "))")
-
-        if (self.logicOperator == 'not(='):
-            f.write(')')
-        f.write('\n')
-        f.close()
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.feValue) + "))"
+        if self.logicOperator == 'not(=':
+            assume_stmnt += ')'
+        local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
 
     def visit_expr4(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        f = open('files/assumeStmnt.txt', 'a')
-        f.write('\n')
-        f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) +
-                " " + str(self.feValue) + "))")
-        if (self.logicOperator == 'not(='):
-            f.write(')')
-        f.write('\n')
-        f.close()
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.feValue) + "))"
+        if self.logicOperator == 'not(=':
+            assume_stmnt += ')'
+        local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
 
     def visit_expr5(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        f = open('files/assumeStmnt.txt', 'a')
-        f.write('\n')
-        f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " +
-                str(self.df.columns.values[self.feIndex] + str(1)) + "))")
-        if (self.logicOperator == 'not(='):
-            f.write(')')
-        f.write('\n')
-        f.close()
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.df.columns.values[self.feIndex] + str(1)) + "))"
+        if self.logicOperator == 'not(=':
+            assume_stmnt += ')'
+        local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
 
     def visit_expr6(self, node, children):
-        if (self.arrFlag == True):
+        if self.arrFlag:
             self.trojan_expr(node, children)
         else:
             temp_expr = node.text
             self.replaceIndex(temp_expr)
-            f = open('files/assumeStmnt.txt', 'a')
-            f.write('\n')
-            f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " +
-                    str(self.df.columns.values[self.feIndex] + str(1)) + "))")
-            if (self.logicOperator == 'not(='):
-                f.write(')')
-            f.write('\n')
-            f.close()
+            assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.df.columns.values[self.feIndex] + str(1)) + "))"
+            if self.logicOperator == 'not(=':
+                assume_stmnt += ')'
+            local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
 
     def visit_expr7(self, node, children):
         self.varMapDict['no_assumption'] = True
         self.storeMapping()
 
     def trojan_expr(self, node, children):
-        f = open('files/assumeStmnt.txt', 'a')
-        f.write('\n')
-        f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " +
-                str(self.valueArr[self.feIndex]) + "))")
-        if (self.logicOperator == 'not(='):
-            f.write(')')
-        f.write('\n')
-        f.close()
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.valueArr[self.feIndex]) + "))"
+        if self.logicOperator == 'not(=':
+            assume_stmnt += ')'
+        local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
         self.storeMapping()
 
     # Later use this function to convert statement in the assume to prefix expression form
     def replaceIndex(self, temp_expr):
-        for i in range(0, len(self.classVarList)):
+        for i in range(len(self.classVarList)):
             self.varList.append(self.classVarList[i].split('[', 1)[0])
 
-        for i in range(0, len(self.classVarList)):
-            if (self.classVarList[i] in temp_expr):
-                temp_expr = temp_expr.replace(str(self.classVarList[i]), str(self.df.columns.values[self.feIndex]
-                                                                             + str(i)))
-                for j in range(0, len(self.varList)):
-                    if (self.varList[j] in self.classVarList[i]):
+        for i in range(len(self.classVarList)):
+            if self.classVarList[i] in temp_expr:
+                temp_expr = temp_expr.replace(str(self.classVarList[i]), str(self.df.columns.values[self.feIndex] + str(i)))
+                for j in range(len(self.varList)):
+                    if self.varList[j] in self.classVarList[i]:
                         self.varMapDict[self.varList[j]] = str(self.df.columns.values[self.feIndex] + str(i))
                         self.feArr.append(self.df.columns.values[self.feIndex] + str(i))
         self.varMapDict['no_assumption'] = False
@@ -294,15 +271,14 @@ class AssumptionVisitor(NodeVisitor):
         self.arrFlag = True
 
     def getPrefixExp(self, temp_expr1):
-        for i in range(0, len(self.classVarList)):
+        for i in range(len(self.classVarList)):
             self.varList.append(self.classVarList[i].split('[', 1)[0])
 
-        for i in range(0, len(self.classVarList)):
-            if (self.classVarList[i] in temp_expr1):
-                temp_expr1 = temp_expr1.replace(str(self.classVarList[i]), str(self.df.columns.values[self.feIndex]
-                                                                               + str(i)))
-                for j in range(0, len(self.varList)):
-                    if (self.varList[j] in self.classVarList[i]):
+        for i in range(len(self.classVarList)):
+            if self.classVarList[i] in temp_expr1:
+                temp_expr1 = temp_expr1.replace(str(self.classVarList[i]), str(self.df.columns.values[self.feIndex] + str(i)))
+                for j in range(len(self.varList)):
+                    if self.varList[j] in self.classVarList[i]:
                         self.varMapDict[self.varList[j]] = str(self.df.columns.values[self.feIndex] + str(i))
                         self.feArr.append(self.df.columns.values[self.feIndex] + str(i))
 
@@ -313,82 +289,73 @@ class AssumptionVisitor(NodeVisitor):
         self.prefix_list = list(prefix_expr.split(" "))
 
     def storeMapping(self):
-
-        if (self.arrFlag == True):
+        if self.arrFlag:
             self.varMapDict['no_mapping'] = True
             self.varMapDict['no_assumption'] = False
         else:
             self.varMapDict['no_mapping'] = False
         try:
-            with open(HERE.joinpath('refactored2/files/dict.csv'), 'w') as csv_file:
-                writer = cv.writer(csv_file)
-                # for key, value in self.varMapDict.items():
-                #     print(key, value)
-                #     writer.writerow([key, value])
-            local_save(self.varMapDict, 'dict')
+            local_save(self.varMapDict, 'dict', force_rewrite=True)
         except IOError:
             print("I/O error")
 
     def expr2logic(self, prefix_list):
         abs_flag = False
-        f = open('files/assumeStmnt.txt', 'a')
-        f.write('\n \n')
-        f.write("(assert (" + self.logicOperator + " ")
+        logic_stmnt = "(assert (" + self.logicOperator + " "
         count_par = 2
-        if (self.logicOperator == 'not(='):
+        if self.logicOperator == 'not(=':
             count_par += 1
 
         for el in prefix_list:
             for op in self.arithOperator:
-                if (el == 'abs'):
+                if el == 'abs':
                     abs_flag = True
-                    for i in range(0, self.df.shape[1]):
+                    for i in range(self.df.shape[1]):
                         temp = str(self.df.columns.values[i])
-                        if (temp in self.feArr[0]):
+                        if temp in self.feArr[0]:
                             feature = self.df.columns.values[i]
                             break
-                    if ('float' in str(self.df.dtypes[feature])):
-                        f.write("(" + 'absoluteReal' + " ")
+                    if 'float' in str(self.df.dtypes[feature]):
+                        logic_stmnt += "(" + 'absoluteReal' + " "
                     else:
-                        f.write("(" + 'absoluteInt' + " ")
+                        logic_stmnt += "(" + 'absoluteInt' + " "
                     count_par += 1
                     break
-                if (op in el):
-                    f.write("(" + op + " ")
+                if op in el:
+                    logic_stmnt += "(" + op + " "
                     count_par += 1
             for op in self.numList:
-                if (op in el):
-                    f.write(op + " ")
+                if op in el:
+                    logic_stmnt += op + " "
             for op in self.feArr:
-                if (op in el):
-                    f.write(op + " ")
-            if (el == ')'):
-                if (abs_flag == True):
+                if op in el:
+                    logic_stmnt += op + " "
+            if el == ')':
+                if abs_flag:
                     count_par -= 2
-                    f.write('))')
+                    logic_stmnt += '))'
                 else:
                     count_par -= 1
-                    f.write(')')
-        if (len(self.arithOperator) > 1):
-            f.write(") ")
+                    logic_stmnt += ')'
+        if len(self.arithOperator) > 1:
+            logic_stmnt += ") "
             count_par -= 1
-        f.write(self.numEnd)
-        while (count_par >= 1):
-            f.write(")")
+        logic_stmnt += self.numEnd
+        while count_par >= 1:
+            logic_stmnt += ")"
             count_par -= 1
 
-        f.write('\n')
-        f.close()
+        local_save(logic_stmnt, 'assumeStmnt', force_rewrite=False)
 
     def checkValFeIndex(self):
-        if (self.feIndex > self.noOfAttr):
-            raise Exception("Feature Index exceed maximum no. Of features in the data")
+        if self.feIndex > self.noOfAttr:
+            raise Exception("Feature Index exceed maximum number of features in the data")
 
     def checkIndexConstncy(self):
         digit1 = int(re.search(r'\d+', self.classVarList[0]).group(0))
-        if (len(self.classVarList) > 1):
+        if len(self.classVarList) > 1:
             digit2 = int(re.search(r'\d+', self.classVarList[1]).group(0))
-            if (digit1 != digit2):
+            if digit1 != digit2:
                 raise Exception("Feature Indexes don't match")
 
 
