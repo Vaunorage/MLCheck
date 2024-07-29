@@ -9,15 +9,42 @@ from paths import HERE
 
 
 def local_save(var, var_name):
-    var_path = HERE.joinpath(f"refactored2/files{var_name}")
-    with open(var_path, 'wb') as file:
-        pickle.dump(var, file)
+    var_path = HERE.joinpath(f"refactored2/files/{var_name}")
+    var_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
+    if isinstance(var, pd.DataFrame):
+        var_path = var_path.with_suffix('.csv')
+        var.to_csv(var_path, index=False)
+    elif isinstance(var, dict):
+        var_path = var_path.with_suffix('.json')
+        with open(var_path, 'w') as file:
+            json.dump(var, file)
+    else:
+        var_path = var_path.with_suffix('.pkl')
+        with open(var_path, 'wb') as file:
+            pickle.dump(var, file)
+    print(f"Data has been saved to '{var_path}'")
 
 
 def local_load(var_name):
-    var_path = HERE.joinpath(f"refactored2/files{var_name}")
-    with open(var_path, 'rb') as file:
-        return pickle.load(file)
+    var_path_csv = HERE.joinpath(f"refactored2/files/{var_name}.csv")
+    var_path_json = HERE.joinpath(f"refactored2/files/{var_name}.json")
+    var_path_pkl = HERE.joinpath(f"refactored2/files/{var_name}.pkl")
+
+    if var_path_csv.exists():
+        data = pd.read_csv(var_path_csv)
+        print(f"Data loaded as pandas DataFrame from '{var_path_csv}'")
+    elif var_path_json.exists():
+        with open(var_path_json, 'r') as file:
+            data = json.load(file)
+        print(f"Data loaded as dictionary from '{var_path_json}'")
+    elif var_path_pkl.exists():
+        with open(var_path_pkl, 'rb') as file:
+            data = pickle.load(file)
+        print(f"Data loaded using pickle from '{var_path_pkl}'")
+    else:
+        raise FileNotFoundError(f"No saved data found with base name '{var_name}'")
+
+    return data
 
 
 def file_len(fname):

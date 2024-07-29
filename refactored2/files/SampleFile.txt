@@ -1,1 +1,1 @@
-(assert (=> (and (> martial_status1 0.5) (> capital_gain1 0.5) (<= capital_gain1 30.5) (<= workclass1 34.0) (> occupation1 7.5) (<= capital_gain1 5.5) (<= occupation1 10.5) (<= fnlwgt1 23.0) (> hours_per_week1 36.5) (> capital_loss1 -0.5) (> sex1 0.5) ) (= Class 1)))
+(assert (=> (and (> martial_status1 0.5) (<= capital_gain1 1.5) (> occupation1 4.5) (<= capital_loss1 1.5) (> hours_per_week1 42.5) (<= hours_per_week1 57.5) (> martial_status1 1.5) (<= occupation1 5.5) (> hours_per_week1 53.5) (<= fnlwgt1 9.5) (> sex1 0.5) ) (= Class 1)))
