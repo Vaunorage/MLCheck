@@ -6,16 +6,13 @@ import csv as cv
 import numpy as np
 import random as rd
 import sys
-sys.path.append("../")
 from parsimonious.nodes import NodeVisitor
 from parsimonious.grammar import Grammar
-from itertools import groupby
 import re
 import os, time
-from refactored2 import trainDecTree, tree2Logic, Pruning, ReadZ3Output, trainDNN
-from refactored2 import assume2logic, assert2logic, processCandCex, util, DNN2logic
+from refactored2 import trainDecTree, tree2Logic, ReadZ3Output
+from refactored2 import processCandCex, util
 from joblib import dump, load
-from refactored2 import PytorchDNNStruct
 
 
 class generateData:
@@ -267,7 +264,6 @@ class multiLabelPropCheck:
                 self.layer_size = 64
             elif (layer_size > 100) or(no_of_layers > 5):
                 raise Exception("White-box model is too big to translate")
-                sys.exit(1)    
             else:
                 self.no_of_layers = no_of_layers
                 self.layer_size = layer_size
@@ -308,13 +304,6 @@ class multiLabelPropCheck:
                 self.paramDict['model_type'] = 'sklearn'
                 self.model = model
                 dump(self.model, 'Model/MUT.joblib')
-
-        elif model_type == 'Pytorch':
-            self.paramDict['model_type'] = 'Pytorch'
-            self.paramDict['model_path'] = model_path
-            self.model = PytorchDNNStruct.Net()
-            self.model = torch.load(model_path)
-            self.model.eval()
         else:
             raise Exception("Please provide the type of the model (Pytorch/sklearn)")
 
@@ -325,7 +314,6 @@ class multiLabelPropCheck:
         if train_data_available:
             if train_data_loc == '':
                 raise Exception('Please provide the training data location')
-                sys.exit(1)
             else:
                 if train_ratio is None:
                     self.paramDict['train_ratio'] = 100

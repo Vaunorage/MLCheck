@@ -22,7 +22,7 @@ class generateData:
         self.typeArr = feTypeArr
         self.minArr = minValArr
         self.maxArr = maxValArr
-        with open('param_dict.csv') as csv_file:
+        with open('files/param_dict.csv') as csv_file:
             reader = cv.reader(csv_file)
             self.paramDict = dict(reader)
 
@@ -42,7 +42,7 @@ class generateData:
     # Function to generate a new sample
     def funcGenData(self):
         tempData = np.zeros((1, len(self.nameArr)), dtype=object)
-        f = open('MUTWeight.txt', 'r')
+        f = open('files/MUTWeight.txt', 'r')
         weight_content = f.readline()
 
         for k in range(0, len(self.nameArr)):
@@ -83,7 +83,7 @@ class generateData:
                     testMatrix[i][j] = temp[0][j]
                 i = i + 1
 
-        with open('TestingData.csv', 'w', newline='') as csvfile:
+        with open('files/TestingData.csv', 'w', newline='') as csvfile:
             writer = cv.writer(csvfile)
             writer.writerow(self.nameArr)
             writer.writerows(testMatrix)
@@ -111,7 +111,7 @@ class generateData:
                 ratioTrack.append(ratio)
                 testMatrix[testCount] = data[ratio]
                 testCount = testCount + 1
-        with open('TestingData.csv', 'a', newline='') as csvfile:
+        with open('files/TestingData.csv', 'a', newline='') as csvfile:
             writer = cv.writer(csvfile)
             writer.writerows(testMatrix)
 
@@ -145,12 +145,12 @@ class makeOracleData:
 
     def __init__(self, model):
         self.model = model
-        with open('param_dict.csv') as csv_file:
+        with open('files/param_dict.csv') as csv_file:
             reader = cv.reader(csv_file)
             self.paramDict = dict(reader)
 
     def funcGenOracle(self):
-        dfTest = pd.read_csv('TestingData.csv')
+        dfTest = pd.read_csv('files/TestingData.csv')
         dataTest = dfTest.values
         predict_list = np.zeros((1, dfTest.shape[0]))
         X = dataTest[:, :-1]
@@ -173,12 +173,12 @@ class makeOracleData:
                 predict_class = self.model.predict(X)
                 for i in range(0, X.shape[0]):
                     dfTest.loc[i, 'Class'] = int(predict_class[i])
-        dfTest.to_csv('OracleData.csv', index=False, header=True)
+        dfTest.to_csv('files/OracleData.csv', index=False, header=True)
 
 
 class propCheck:
 
-    def __init__(self, max_samples=None, deadline=None, model=None, no_of_params=None, xml_file='', mul_cex=False,
+    def __init__(self, max_samples=None, deadline=None, model=None, no_of_params=None, mul_cex=False,
                  white_box_model=None, no_of_layers=None, layer_size=None, no_of_class=None,
                  no_EPOCHS=None, model_with_weight=False, train_data_available=False, train_data_loc='',
                  multi_label=False, model_type=None, model_path='', no_of_train=None, train_ratio=None):
@@ -191,9 +191,8 @@ class propCheck:
             else:
                 self.paramDict['no_of_class'] = no_of_class
             multiLabelMain.multiLabelPropCheck(no_of_params=no_of_params, max_samples=max_samples, deadline=deadline,
-                                               model=model, xml_file=xml_file, no_of_class=no_of_class, mul_cex=mul_cex,
-                                               white_box_model=white_box_model, no_of_layers=no_of_layers,
-                                               layer_size=layer_size, no_EPOCHS=no_EPOCHS, model_path=model_path,
+                                               model=model, no_of_class=no_of_class, mul_cex=mul_cex,
+                                               white_box_model=white_box_model, no_EPOCHS=no_EPOCHS, model_path=model_path,
                                                no_of_train=None, train_ratio=None, model_type=model_type)
         else:
             if max_samples is None:
@@ -227,15 +226,7 @@ class propCheck:
             self.paramDict['mul_cex_opt'] = mul_cex
             self.paramDict['multi_label'] = False
 
-            if xml_file == '':
-                raise Exception("Please provide a file name")
-            else:
-                try:
-                    self.xml_file = xml_file
-                except Exception as e:
-                    raise Exception("File does not exist")
-
-            f = open('MUTWeight.txt', 'w')
+            f = open('files/MUTWeight.txt', 'w')
             if not model_with_weight:
                 f.write(str(False))
                 if model_type == 'sklearn':
@@ -281,7 +272,7 @@ class propCheck:
             self.paramDict['train_data_loc'] = train_data_loc
 
             try:
-                with open('param_dict.csv', 'w') as csv_file:
+                with open('files/param_dict.csv', 'w') as csv_file:
                     writer = cv.writer(csv_file)
                     for key, value in self.paramDict.items():
                         writer.writerow([key, value])
@@ -302,11 +293,11 @@ class propCheck:
 class runChecker:
 
     def __init__(self):
-        self.df = pd.read_csv('OracleData.csv')
-        f = open('MUTWeight.txt', 'r')
+        self.df = pd.read_csv('files/OracleData.csv')
+        f = open('files/MUTWeight.txt', 'r')
         self.MUTcontent = f.readline()
         f.close()
-        with open('param_dict.csv') as csv_file:
+        with open('files/param_dict.csv') as csv_file:
             reader = cv.reader(csv_file)
             self.paramDict = dict(reader)
 
@@ -322,35 +313,35 @@ class runChecker:
             pred_weight = dfWeight.values
             pred_weight = pred_weight[:, :-1]
             self.model = pred_weight
-        with open('TestSet.csv', 'w', newline='') as csvfile:
+        with open('files/TestSet.csv', 'w', newline='') as csvfile:
             fieldnames = self.df.columns.values
             writer = cv.writer(csvfile)
             writer.writerow(fieldnames)
-        with open('CexSet.csv', 'w', newline='') as csvfile:
+        with open('files/CexSet.csv', 'w', newline='') as csvfile:
             fieldnames = self.df.columns.values
             writer = cv.writer(csvfile)
             writer.writerow(fieldnames)
 
     def funcCreateOracle(self):
-        dfTest = pd.read_csv('TestingData.csv')
+        dfTest = pd.read_csv('files/TestingData.csv')
         data = dfTest.values
         X = data[:, :-1]
         if self.MUTcontent == 'False':
             predict_class = self.model.predict(X)
             for i in range(0, X.shape[0]):
                 dfTest.loc[i, 'Class'] = predict_class[i]
-            dfTest.to_csv('OracleData.csv', index=False, header=True)
+            dfTest.to_csv('files/OracleData.csv', index=False, header=True)
         else:
             predict_list = np.zeros((1, dfTest.shape[0]))
             for i in range(0, X.shape[0]):
                 predict_list[0][i] = np.sign(np.dot(self.model, X[i]))
                 dfTest.loc[i, 'Class'] = int(predict_list[0][i])
-            dfTest.to_csv('OracleData.csv', index=False, header=True)
+            dfTest.to_csv('files/OracleData.csv', index=False, header=True)
 
     def chkPairBel(self, tempMatrix, noAttr):
         firstTest = np.zeros((noAttr,))
         secTest = np.zeros((noAttr,))
-        dfT = pd.read_csv('TestingSet.csv')
+        dfT = pd.read_csv('files/TestingSet.csv')
         tstMatrix = dfT.values
 
         for i in range(0, noAttr):
@@ -367,7 +358,7 @@ class runChecker:
 
     def chkAttack(self, target_class):
         cexPair = ()
-        dfTest = pd.read_csv('TestingSet.csv')
+        dfTest = pd.read_csv('files/TestingSet.csv')
         dataTest = dfTest.values
         i = 0
         X = torch.tensor(dataTest, dtype=torch.float32)
@@ -384,7 +375,7 @@ class runChecker:
 
     def checkWithOracle(self):
         assume_dict = []
-        f = open('assumeStmnt.txt', 'r')
+        f = open('files/assumeStmnt.txt', 'r')
         p = f.readlines()
         dfTr = pd.read_csv('Datasets/mnist_resized.csv')
         noOfAttr = dfTr.shape[1] - 1
@@ -401,13 +392,13 @@ class runChecker:
         f1 = open('files/assertStmnt.txt', 'r')
         p1 = f1.readlines()
         num1 = float(re.search(r'[+-]?([0-9]*[.])[0-9]+', p1[0]).group(0))
-        with open('TestingSet.csv', 'w', newline='') as csvfile:
+        with open('files/TestingSet.csv', 'w', newline='') as csvfile:
             fieldnames = dfTr.columns.values
             writer = cv.writer(csvfile)
             writer.writerow(fieldnames)
-        dfAg = pd.read_csv('TestingSet.csv')
+        dfAg = pd.read_csv('files/TestingSet.csv')
         dfAg.drop('Class', axis=1, inplace=True)
-        dfAg.to_csv('TestingSet.csv', index=False, header=True)
+        dfAg.to_csv('files/TestingSet.csv', index=False, header=True)
         inst_count = 0
         i = 0
         while inst_count < 1000:
@@ -422,7 +413,7 @@ class runChecker:
                 else:
                     tempMatrix[0][i] = rd.uniform(dfTr.iloc[:, i].min(), dfTr.iloc[:, i].max())
             if not self.chkPairBel(tempMatrix, noOfAttr):
-                with open('TestingSet.csv', 'a', newline='') as csvfile:
+                with open('files/TestingSet.csv', 'a', newline='') as csvfile:
                     writer = cv.writer(csvfile)
                     writer.writerows(tempMatrix)
             inst_count = inst_count + 1
@@ -443,7 +434,7 @@ class runChecker:
                 return temp_class
 
     def addModelPred(self):
-        dfCexSet = pd.read_csv('CexSet.csv')
+        dfCexSet = pd.read_csv('files/CexSet.csv')
         dataCex = dfCexSet.values
         if self.MUTcontent == 'False':
             predict_class = self.model.predict(dataCex[:, :-1])
@@ -457,7 +448,7 @@ class runChecker:
                 if predict_list[0][i] < 0:
                     predict_list[0][i] = 0
                 dfCexSet.loc[i, 'Class'] = predict_list[0][i]
-        dfCexSet.to_csv('CexSet.csv', index=False, header=True)
+        dfCexSet.to_csv('files/CexSet.csv', index=False, header=True)
 
     def runWithTree(self):
         retrain_flag = False
@@ -474,16 +465,16 @@ class runChecker:
             print('count is:', count)
             tree = trainDecTree.functrainDecTree()
             tree2Logic.functree2LogicMain(tree, self.no_of_params)
-            util.storeAssumeAssert('DecSmt.smt2')
-            util.addSatOpt('DecSmt.smt2')
-            os.system(r"z3 DecSmt.smt2 > FinalOutput.txt")
+            util.storeAssumeAssert('files/DecSmt.smt2')
+            util.addSatOpt('files/DecSmt.smt2')
+            os.system(r"z3 files/DecSmt.smt2 > files/FinalOutput.txt")
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
                 if count == 0:
                     print('No CEX is found by the checker at the first trial')
                     return 0
                 elif (count != 0) and (self.mul_cex == 'True'):
-                    dfCexSet = pd.read_csv('CexSet.csv')
+                    dfCexSet = pd.read_csv('files/CexSet.csv')
                     if round(dfCexSet.shape[0] / self.no_of_params) == 0:
                         print('No CEX is found')
                         return 0
@@ -498,12 +489,12 @@ class runChecker:
                 processCandCex.funcAddCexPruneCandidateSet(tree)
                 processCandCex.funcCheckCex()
                 # Increase the count if no further candidate cex has been found
-                dfCand = pd.read_csv('Cand-set.csv')
+                dfCand = pd.read_csv('files/Cand-Set.csv')
                 if round(dfCand.shape[0] / self.no_of_params) == 0:
                     count_cand_zero += 1
                     if count_cand_zero == MAX_CAND_ZERO:
                         if self.mul_cex == 'True':
-                            dfCexSet = pd.read_csv('CexSet.csv')
+                            dfCexSet = pd.read_csv('files/CexSet.csv')
                             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                             if round(dfCexSet.shape[0] / self.no_of_params) > 0:
                                 self.addModelPred()
@@ -537,12 +528,12 @@ class runChecker:
                             testIndx += 1
                     if temp_count == self.no_of_params:
                         if self.mul_cex == 'True':
-                            with open('CexSet.csv', 'a', newline='') as csvfile:
+                            with open('files/CexSet.csv', 'a', newline='') as csvfile:
                                 writer = cv.writer(csvfile)
                                 writer.writerows(temp_store)
                         else:
-                            print('A counter example is found, check it in CexSet.csv file: ', temp_store)
-                            with open('CexSet.csv', 'a', newline='') as csvfile:
+                            print('A counter example is found, check it in files/CexSet.csv file: ', temp_store)
+                            with open('files/CexSet.csv', 'a', newline='') as csvfile:
                                 writer = cv.writer(csvfile)
                                 writer.writerows(temp_store)
                             self.addModelPred()
@@ -557,7 +548,7 @@ class runChecker:
                     print("Time out")
                     break
 
-        dfCexSet = pd.read_csv('CexSet.csv')
+        dfCexSet = pd.read_csv('files/CexSet.csv')
         if (round(dfCexSet.shape[0] / self.no_of_params) > 0) and (count >= self.max_samples):
             self.addModelPred()
             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
@@ -669,7 +660,7 @@ def Assert(*args):
     assertVisitObj = assert2logic.AssertionVisitor()
     assertVisitObj.visit(tree)
 
-    with open('param_dict.csv') as csv_file:
+    with open('files/param_dict.csv') as csv_file:
         reader = cv.reader(csv_file)
         paramDict = dict(reader)
     if paramDict['multi_label'] == 'True':
@@ -683,47 +674,47 @@ def Assert(*args):
         obj_faircheck.runPropCheck()
         print('time required is', time.time() - start_time)
 
-    if os.path.exists('assumeStmnt.txt'):
-        os.remove('assumeStmnt.txt')
+    if os.path.exists('files/assumeStmnt.txt'):
+        os.remove('files/assumeStmnt.txt')
     if os.path.exists('files/assertStmnt.txt'):
         os.remove('files/assertStmnt.txt')
 
-    if os.path.exists('Cand-set.csv'):
-        os.remove('Cand-set.csv')
-    if os.path.exists('CandidateSet.csv'):
-        os.remove('CandidateSet.csv')
-    if os.path.exists('CandidateSetInst.csv'):
-        os.remove('CandidateSetInst.csv')
-    if os.path.exists('CandidateSetBranch.csv'):
-        os.remove('CandidateSetBranch.csv')
+    if os.path.exists('files/Cand-Set.csv'):
+        os.remove('files/Cand-Set.csv')
+    if os.path.exists('files/CandidateSet.csv'):
+        os.remove('files/CandidateSet.csv')
+    if os.path.exists('files/CandidateSetInst.csv'):
+        os.remove('files/CandidateSetInst.csv')
+    if os.path.exists('files/CandidateSetBranch.csv'):
+        os.remove('files/CandidateSetBranch.csv')
 
-    if os.path.exists('TestDataSMT.csv'):
-        os.remove('TestDataSMT.csv')
-    if os.path.exists('TestDataSMTMain.csv'):
-        os.remove('TestDataSMTMain.csv')
+    if os.path.exists('files/TestDataSMT.csv'):
+        os.remove('files/TestDataSMT.csv')
+    if os.path.exists('files/TestDataSMTMain.csv'):
+        os.remove('files/TestDataSMTMain.csv')
 
-    if os.path.exists('DecSmt.smt2'):
-        os.remove('DecSmt.smt2')
-    if os.path.exists('ToggleBranchSmt.smt2'):
-        os.remove('ToggleBranchSmt.smt2')
-    if os.path.exists('ToggleFeatureSmt.smt2'):
-        os.remove('ToggleFeatureSmt.smt2')
-    if os.path.exists('TreeOutput.txt'):
-        os.remove('TreeOutput.txt')
+    if os.path.exists('files/DecSmt.smt2'):
+        os.remove('files/DecSmt.smt2')
+    if os.path.exists('files/ToggleBranchSmt.smt2'):
+        os.remove('files/ToggleBranchSmt.smt2')
+    if os.path.exists('files/ToggleFeatureSmt.smt2'):
+        os.remove('files/ToggleFeatureSmt.smt2')
+    if os.path.exists('files/TreeOutput.txt'):
+        os.remove('files/TreeOutput.txt')
 
-    if os.path.exists('SampleFile.txt'):
-        os.remove('SampleFile.txt')
-    if os.path.exists('FinalOutput.txt'):
-        os.remove('FinalOutput.txt')
-    if os.path.exists('MUTWeight.txt'):
-        os.remove('MUTWeight.txt')
-    if os.path.exists('ConditionFile.txt'):
-        os.remove('ConditionFile.txt')
+    if os.path.exists('files/SampleFile.txt'):
+        os.remove('files/SampleFile.txt')
+    if os.path.exists('files/FinalOutput.txt'):
+        os.remove('files/FinalOutput.txt')
+    if os.path.exists('files/MUTWeight.txt'):
+        os.remove('files/MUTWeight.txt')
+    if os.path.exists('files/ConditionFile.txt'):
+        os.remove('files/ConditionFile.txt')
 
     if os.path.exists('MUTWeight.csv'):
         os.remove('MUTWeight.csv')
-    if os.path.exists('MUTWeight.txt'):
-        os.remove('MUTWeight.txt')
+    if os.path.exists('files/MUTWeight.txt'):
+        os.remove('files/MUTWeight.txt')
     if os.path.exists('DNNSmt.smt2'):
         os.remove('DNNSmt.smt2')
 

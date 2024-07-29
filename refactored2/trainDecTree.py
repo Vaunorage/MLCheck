@@ -5,7 +5,7 @@ from joblib import dump
 
 
 def functrainDecTree():
-    df = pd.read_csv('OracleData.csv')
+    df = pd.read_csv('files/OracleData.csv')
     data = df.values
     X = data[:, :-1]
     Y = data[:, -1]

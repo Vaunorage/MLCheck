@@ -5,10 +5,6 @@ from parsimonious.grammar import Grammar
 import re
 from paths import HERE
 from refactored2 import util
-
-# In[73]:
-
-
 import sys
 
 
@@ -145,7 +141,7 @@ class AssumptionVisitor(NodeVisitor):
         self.feIndex = 99999
         self.feValue = 0
         self.count = 0
-        self.df = pd.read_csv('OracleData.csv')
+        self.df = pd.read_csv('files/OracleData.csv')
         self.feArr = []
         self.noOfAttr = self.df.shape[1]
         self.varMapDict = {}
@@ -203,7 +199,7 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr3(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        f = open('assumeStmnt.txt', 'a')
+        f = open('files/assumeStmnt.txt', 'a')
         f.write('\n')
         f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) +
                 " " + str(self.feValue) + "))")
@@ -216,7 +212,7 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr4(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        f = open('assumeStmnt.txt', 'a')
+        f = open('files/assumeStmnt.txt', 'a')
         f.write('\n')
         f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) +
                 " " + str(self.feValue) + "))")
@@ -228,7 +224,7 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr5(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        f = open('assumeStmnt.txt', 'a')
+        f = open('files/assumeStmnt.txt', 'a')
         f.write('\n')
         f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " +
                 str(self.df.columns.values[self.feIndex] + str(1)) + "))")
@@ -243,7 +239,7 @@ class AssumptionVisitor(NodeVisitor):
         else:
             temp_expr = node.text
             self.replaceIndex(temp_expr)
-            f = open('assumeStmnt.txt', 'a')
+            f = open('files/assumeStmnt.txt', 'a')
             f.write('\n')
             f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " +
                     str(self.df.columns.values[self.feIndex] + str(1)) + "))")
@@ -257,7 +253,7 @@ class AssumptionVisitor(NodeVisitor):
         self.storeMapping()
 
     def trojan_expr(self, node, children):
-        f = open('assumeStmnt.txt', 'a')
+        f = open('files/assumeStmnt.txt', 'a')
         f.write('\n')
         f.write("(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " +
                 str(self.valueArr[self.feIndex]) + "))")
@@ -312,7 +308,7 @@ class AssumptionVisitor(NodeVisitor):
         self.storeMapping()
         prefix_obj = InfixConverter()
         prefix_expr = prefix_obj.convert(temp_expr1)
-        self.prefix_list = util.String2List(prefix_expr)
+        self.prefix_list = list(prefix_expr.split(" "))
 
     def storeMapping(self):
 
@@ -322,7 +318,7 @@ class AssumptionVisitor(NodeVisitor):
         else:
             self.varMapDict['no_mapping'] = 'False'
         try:
-            with open(HERE.joinpath('dict.csv'), 'w') as csv_file:
+            with open(HERE.joinpath('refactored2/files/dict.csv'), 'w') as csv_file:
                 writer = cv.writer(csv_file)
                 for key, value in self.varMapDict.items():
                     print(key, value)
@@ -332,7 +328,7 @@ class AssumptionVisitor(NodeVisitor):
 
     def expr2logic(self, prefix_list):
         abs_flag = False
-        f = open('assumeStmnt.txt', 'a')
+        f = open('files/assumeStmnt.txt', 'a')
         f.write('\n \n')
         f.write("(assert (" + self.logicOperator + " ")
         count_par = 2
@@ -391,9 +387,6 @@ class AssumptionVisitor(NodeVisitor):
             digit2 = int(re.search(r'\d+', self.classVarList[1]).group(0))
             if (digit1 != digit2):
                 raise Exception("Feature Indexes don't match")
-
-
-# In[130]:
 
 
 def Assume(*args):

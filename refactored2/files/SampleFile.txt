@@ -1,0 +1,1 @@
+(assert (=> (and (<= martial_status0 0.5) (<= occupation0 7.5) (<= native_country0 10.5) (> workclass0 2.5) (<= capital_loss0 1.5) (<= capital_gain0 0.5) (> occupation0 1.5) (> hours_per_week0 47.5) (<= occupation0 4.5) (<= race0 1.0) (> native_country0 7.5) (<= sex0 0.5) (<= age0 3.5) ) (= Class 0)))

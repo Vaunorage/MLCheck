@@ -1,0 +1,286 @@
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))
+
+(assert (=  age0 age1))
+
+(assert (=  workclass0 workclass1))
+
+(assert (=  fnlwgt0 fnlwgt1))
+
+(assert (=  education0 education1))
+
+(assert (=  martial_status0 martial_status1))
+
+(assert (=  occupation0 occupation1))
+
+(assert (=  relationship0 relationship1))
+
+(assert (=  race0 race1))
+
+(assert (not(= sex0 sex1)))
+
+(assert (=  capital_gain0 capital_gain1))
+
+(assert (=  capital_loss0 capital_loss1))
+
+(assert (=  hours_per_week0 hours_per_week1))
+
+(assert (=  native_country0 native_country1))

@@ -1,0 +1,4 @@
+
+(assert(not (= Class0 Class1)))
+(assert(not (= Class0 Class1)))
+(assert(not (= Class0 Class1)))

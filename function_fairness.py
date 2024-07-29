@@ -13,12 +13,8 @@ def func_calculate_sem(samples):
     return standard_dev / math.sqrt(len(samples))
 
 
-# model_path_list_adult = ['FairUnAwareTestCases/LogRegAdult.joblib', 'FairUnAwareTestCases/DecTreeAdult.joblib', 'FairUnAwareTestCases/NBAdult.joblib',
-#                         'FairAwareTestCases/FairNBAdult.joblib']
 model_path_list_adult = ['FairUnAwareTestCases/NBAdult.joblib']
 
-# model_path_list_credit = ['FairUnAwareTestCases/LogRegCredit.joblib', 'FairUnAwareTestCases/DecTreeCredit.joblib', 'FairUnAwareTestCases/NBCredit.joblib',
-#                          'FairAwareTestCases/FairNBCredit.joblib']
 model_path_list_credit = ['FairUnAwareTestCases/NBCredit.joblib']
 
 white_box_list = ['Decision tree', 'DNN']

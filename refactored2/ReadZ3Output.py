@@ -1,6 +1,5 @@
 import pandas as pd
 import csv as cv
-import sys
 import numpy as np
 from refactored2 import util
 import os
@@ -8,32 +7,29 @@ import re
 
 
 def funcConvZ3OutToData(df):
-    fe_flag = False
-
-    with open('param_dict.csv') as csv_file:
+    with open('files/param_dict.csv') as csv_file:
         reader = cv.reader(csv_file)
         paramDict = dict(reader)
     no_of_params = int(paramDict['no_of_params'])
     testMatrix = np.zeros(((no_of_params), df.shape[1]))
 
-    if (os.stat('FinalOutput.txt').st_size > 0):
-        with open('FinalOutput.txt') as f1:
+    if (os.stat('files/FinalOutput.txt').st_size > 0):
+        with open('files/FinalOutput.txt') as f1:
             file_content = f1.readlines()
 
         file_content = [x.strip() for x in file_content]
-        noOfLines = util.file_len('FinalOutput.txt')
+        noOfLines = util.file_len('files/FinalOutput.txt')
 
-        with open('TestDataSMT.csv', 'w', newline='') as csvfile:
+        with open('files/TestDataSMT.csv', 'w', newline='') as csvfile:
             fieldnames = df.columns.values
             writer = cv.writer(csvfile)
             writer.writerow(fieldnames)
             writer.writerows(testMatrix)
 
-        dfAgain = pd.read_csv('TestDataSMT.csv')
+        dfAgain = pd.read_csv('files/TestDataSMT.csv')
         nums = re.compile(r"[+-]?\d+(?:\.\d+)?")
         if ('unknown' in file_content[0]):
             raise Exception('Encoding problem')
-            sys.exit(1)
         if ('model is not available' in file_content[1]):
             return False
         else:
@@ -82,7 +78,7 @@ def funcConvZ3OutToData(df):
                                 i = i + 1
                     if (fe_flag == False):
                         i = i + 2
-            dfAgain.to_csv('TestDataSMT.csv', index=False, header=True)
+            dfAgain.to_csv('files/TestDataSMT.csv', index=False, header=True)
             return True
 
     else:

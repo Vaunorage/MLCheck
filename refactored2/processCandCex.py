@@ -1,22 +1,13 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import pandas as pd
 import csv as cv
 from refactored2 import Pruning
 import numpy as np
 
 
-# In[1]:
-
-
 def funcAddCex2CandidateSet():
-    df = pd.read_csv('TestDataSMT.csv')
+    df = pd.read_csv('files/TestDataSMT.csv')
     data = df.values
-    with open('CandidateSet.csv', 'w', newline='') as csvfile:
+    with open('files/CandidateSet.csv', 'w', newline='') as csvfile:
         fieldnames = df.columns.values  
         writer = cv.writer(csvfile)
         writer.writerow(fieldnames)
@@ -24,36 +15,32 @@ def funcAddCex2CandidateSet():
         
         
 def funcAddCexPruneCandidateSet(tree_model):
-    df = pd.read_csv('TestDataSMT.csv')
+    df = pd.read_csv('files/TestDataSMT.csv')
     data = df.values
     
-    with open('TestDataSMTMain.csv', 'w', newline='') as csvfile:
+    with open('files/TestDataSMTMain.csv', 'w', newline='') as csvfile:
         fieldnames = df.columns.values  
         writer = cv.writer(csvfile)
         writer.writerow(fieldnames)
         writer.writerows(data)
     
-    df = pd.read_csv('OracleData.csv')
+    df = pd.read_csv('files/OracleData.csv')
     #Pruning by negating the data instance
     Pruning.funcPrunInst(df, False)
-    dfInst = pd.read_csv('CandidateSetInst.csv')
+    dfInst = pd.read_csv('files/CandidateSetInst.csv')
     dataInst = dfInst.values
-    with open('CandidateSet.csv', 'a', newline='') as csvfile:
+    with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
         writer = cv.writer(csvfile)
         writer.writerows(dataInst)
     
       
     #Pruning by toggling the branch conditions
     Pruning.funcPrunBranch(df, tree_model)
-    dfBranch = pd.read_csv('CandidateSetBranch.csv')
+    dfBranch = pd.read_csv('files/CandidateSetBranch.csv')
     dataBranch = dfBranch.values    
-    with open('CandidateSet.csv', 'a', newline='') as csvfile:
+    with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
         writer = cv.writer(csvfile)
         writer.writerows(dataBranch)  
-        
-
-
-# In[ ]:
 
 
 def funcCheckDuplicate(pairfirst, pairsecond, testMatrix):
@@ -65,10 +52,8 @@ def funcCheckDuplicate(pairfirst, pairsecond, testMatrix):
         if(pairfirstList == testDataList[i]):
             if(pairsecondList == testDataList[i+1]):
                 return True
-            #elif(pairsecondList == testDataList[i-1]):
-             #   return True
     
-    dfTest = pd.read_csv('TestSet.csv')
+    dfTest = pd.read_csv('files/TestSet.csv')
     dataTest = dfTest.values
     dataTestList = dataTest.tolist()
     for i in range(0, len(dataTestList)-1):
@@ -79,7 +64,7 @@ def funcCheckDuplicate(pairfirst, pairsecond, testMatrix):
 
 
 def funcCheckCex():
-    dfCandidate = pd.read_csv('CandidateSet.csv')
+    dfCandidate = pd.read_csv('files/CandidateSet.csv')
     dataCandidate = dfCandidate.values
     testMatrix = np.zeros((dfCandidate.shape[0], dfCandidate.shape[1]))
     
@@ -89,8 +74,7 @@ def funcCheckCex():
     while(candIndx < dfCandidate.shape[0]-1):
         pairfirst = dataCandidate[candIndx]
         pairsecond = dataCandidate[candIndx+1]
-        #print(pairsecond)
-        if(funcCheckDuplicate(pairfirst, pairsecond, testMatrix)):            
+        if(funcCheckDuplicate(pairfirst, pairsecond, testMatrix)):
             candIndx = candIndx+2
         else:
             for k in range(0, dfCandidate.shape[1]):
@@ -98,46 +82,41 @@ def funcCheckCex():
                 testMatrix[testIndx+1][k] = dataCandidate[candIndx+1][k]
             testIndx = testIndx+2    
             candIndx = candIndx+2  
-    
-    #print("Shape of Candidate.csv is {}".format(dfCandidate.shape[0]))
-          
-    with open('TestSet.csv', 'a', newline='') as csvfile:
+
+    with open('files/TestSet.csv', 'a', newline='') as csvfile:
         writer = cv.writer(csvfile)
         writer.writerows(testMatrix)
     
-    with open('Cand-set.csv', 'w', newline='') as csvfile:
+    with open('files/Cand-Set.csv', 'w', newline='') as csvfile:
         fieldnames = dfCandidate.columns.values  
         writer = cv.writer(csvfile)
         writer.writerow(fieldnames)
         writer.writerows(testMatrix)    
-        
-    #Eliminating the rows with zero values    
-    dfTest = pd.read_csv('TestSet.csv')
+
+    dfTest = pd.read_csv('files/TestSet.csv')
     dfTest = dfTest[(dfTest.T != 0).any()]
-    dfTest.to_csv('TestSet.csv', index = False, header = True)  
-    
-    #Eliminating the rows with zero values    
-    dfCand = pd.read_csv('Cand-set.csv')
+    dfTest.to_csv('files/TestSet.csv', index = False, header = True)  
+
+    dfCand = pd.read_csv('files/Cand-Set.csv')
     dfCand = dfCand[(dfCand.T != 0).any()]
-    dfCand.to_csv('Cand-set.csv', index = False, header = True)
+    dfCand.to_csv('files/Cand-Set.csv', index = False, header = True)
 
 
 def funcAddCexPruneCandidateSet4DNN():
-    df = pd.read_csv('TestDataSMT.csv')
+    df = pd.read_csv('files/TestDataSMT.csv')
     data = df.values
     
-    with open('TestDataSMTMain.csv', 'w', newline='') as csvfile:
+    with open('files/TestDataSMTMain.csv', 'w', newline='') as csvfile:
         fieldnames = df.columns.values  
         writer = cv.writer(csvfile)
         writer.writerow(fieldnames)
         writer.writerows(data)
     
-    df = pd.read_csv('OracleData.csv')
-    #Pruning by negating the data instance
+    df = pd.read_csv('files/OracleData.csv')
     Pruning.funcPrunInst(df, True)
-    dfInst = pd.read_csv('CandidateSetInst.csv')
+    dfInst = pd.read_csv('files/CandidateSetInst.csv')
     dataInst = dfInst.values
-    with open('CandidateSet.csv', 'a', newline='') as csvfile:
+    with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
         writer = cv.writer(csvfile)
         writer.writerows(dataInst)
     

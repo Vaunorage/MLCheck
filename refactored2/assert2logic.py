@@ -1,17 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 from parsimonious.nodes import NodeVisitor
 import csv as cv
 import re, sys
 import pandas as pd
-
-
-# In[2]:
-
 
 class AssertionVisitor(NodeVisitor):
 
@@ -26,11 +16,11 @@ class AssertionVisitor(NodeVisitor):
         self.varMap = {}
         self.feVal = 0
         self.count = 0
-        self.dfOracle = pd.read_csv('OracleData.csv')
-        with open('dict.csv') as csv_file:
+        self.dfOracle = pd.read_csv('files/OracleData.csv')
+        with open('files/dict.csv') as csv_file:
             reader = cv.reader(csv_file)
             self.mydict = dict(reader)
-        with open('param_dict.csv') as csv_file:
+        with open('files/param_dict.csv') as csv_file:
             reader = cv.reader(csv_file)
             self.paramDict = dict(reader)
 
@@ -102,7 +92,6 @@ class AssertionVisitor(NodeVisitor):
     def checkModelName(self):
         if (self.modelVarList[0] != self.modelVarList[1]):
             raise Exception('Model names do not match')
-            sys.exit(1)
 
     def visit_expr2(self, node, children):
         self.checkFeConsist()
@@ -119,7 +108,6 @@ class AssertionVisitor(NodeVisitor):
     def visit_expr3(self, node, children):
         if (self.count > int(self.paramDict['no_of_params'])):
             raise Exception('The no. of parameters mentioned exceeded in assert statement')
-            sys.exit(1)
         self.checkModelName()
         if (self.negOp == '~'):
             if (self.paramDict['white_box_model'] == 'DNN'):
@@ -148,10 +136,7 @@ class AssertionVisitor(NodeVisitor):
             for el in self.varList:
                 if (el not in self.mydict.keys()):
                     raise Exception("Unknown feature vector")
-                    sys.exit(1)
 
         else:
             raise Exception("No. of feature vectors do not match with the assumption")
-            sys.exit(1)
 
-# In[ ]:

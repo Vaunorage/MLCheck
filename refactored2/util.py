@@ -1,11 +1,23 @@
+import pickle
+
 import numpy as np
 import csv as cv
 import pandas as pd
 import os
 
+from paths import HERE
 
-def String2List(string):
-    return list(string.split(" "))
+
+def local_save(var, var_name):
+    var_path = HERE.joinpath(f"refactored2/files{var_name}")
+    with open(var_path, 'wb') as file:
+        pickle.dump(var, file)
+
+
+def local_load(var_name):
+    var_path = HERE.joinpath(f"refactored2/files{var_name}")
+    with open(var_path, 'rb') as file:
+        return pickle.load(file)
 
 
 def file_len(fname):
@@ -18,7 +30,7 @@ def file_len(fname):
 
 
 def convDataInst(X, df, j, no_of_class):
-    with open('param_dict.csv') as csv_file:
+    with open('files/param_dict.csv') as csv_file:
         reader = cv.reader(csv_file)
         paramDict = dict(reader)
     if (paramDict['multi_label'] == 'False'):
@@ -26,20 +38,19 @@ def convDataInst(X, df, j, no_of_class):
     data_inst = np.zeros((1, df.shape[1] - no_of_class))
     if (j > X.shape[0]):
         raise Exception('Z3 has produced counter example with all 0 values of the features: Run the script Again')
-        sys.exit(1)
     for i in range(df.shape[1] - no_of_class):
         data_inst[0][i] = X[j][i]
     return data_inst
 
 
 def funcAdd2Oracle(data):
-    with open('TestingData.csv', 'a', newline='') as csvfile:
+    with open('files/TestingData.csv', 'a', newline='') as csvfile:
         writer = cv.writer(csvfile)
         writer.writerows(data)
 
 
 def funcCreateOracle(no_of_class, multi_label, model):
-    df = pd.read_csv('TestingData.csv')
+    df = pd.read_csv('files/TestingData.csv')
     data = df.values
     if multi_label == 'False':
         X = data[:, :-1]
@@ -54,17 +65,7 @@ def funcCreateOracle(no_of_class, multi_label, model):
             className = str(df.columns.values[index + i])
             for j in range(0, X.shape[0]):
                 df.loc[j, className] = predict_class[j][i]
-    df.to_csv('OracleData.csv', index=False, header=True)
-
-
-def storeMapping(file_name, dictionary):
-    try:
-        with open(file_name, 'w') as csv_file:
-            writer = cv.writer(csv_file)
-            for key, value in dictionary.items():
-                writer.writerow([key, value])
-    except IOError:
-        print("I/O error")
+    df.to_csv('files/OracleData.csv', index=False, header=True)
 
 
 def addContent(file_name, f_content):
@@ -84,7 +85,7 @@ def addSatOpt(file_name):
 
 def storeAssumeAssert(file_name, no_assumption=False):
     if not no_assumption:
-        with open('assumeStmnt.txt') as f2:
+        with open('files/assumeStmnt.txt') as f2:
             f2_content = f2.readlines()
         f2_content = list(set([x.strip() for x in f2_content]))
         addContent(file_name, f2_content)
