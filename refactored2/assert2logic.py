@@ -3,6 +3,9 @@ import csv as cv
 import re, sys
 import pandas as pd
 
+from refactored2.util import local_save, local_load
+
+
 class AssertionVisitor(NodeVisitor):
 
     def __init__(self):
@@ -17,26 +20,22 @@ class AssertionVisitor(NodeVisitor):
         self.feVal = 0
         self.count = 0
         self.dfOracle = pd.read_csv('files/OracleData.csv')
-        with open('files/dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.mydict = dict(reader)
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.mydict = local_load('dict')
+        self.paramDict = local_load('param_dict')
 
     def generic_visit(self, node, children):
         pass
 
     def visit_classVar(self, node, children):
-        if (self.mydict['no_mapping'] == 'True'):
+        if (self.mydict['no_mapping']):
             pass
         else:
             for el in self.varList:
                 if (el in node.text):
-                    if (self.mydict['no_assumption'] == 'False'):
+                    if (self.mydict['no_assumption']):
                         className = 'Class' + str(self.mydict[el])
                     else:
-                        className = 'Class' + str(self.count)
+                        className = 'Class' + str(self.count-1)
             self.currentClass.append(className)
 
     def visit_neg(self, node, children):
@@ -52,11 +51,11 @@ class AssertionVisitor(NodeVisitor):
             raise Exception('Class name ' + str(node.text) + ' do not exist')
 
     def visit_variable(self, node, children):
-        if (self.mydict['no_mapping'] == 'True'):
+        if (self.mydict['no_mapping']):
             pass
         else:
             self.varList.append(node.text)
-            if (self.mydict['no_assumption'] == 'False'):
+            if (self.mydict['no_assumption']):
                 num = str(int(re.search(r'\d+', self.mydict[node.text]).group(0)))
                 self.mydict[node.text] = num[len(num) - 1]
             else:
@@ -78,7 +77,7 @@ class AssertionVisitor(NodeVisitor):
         self.feVal = float(node.text)
 
     def visit_expr1(self, node, children):
-        if (self.mydict['no_mapping'] == 'True'):
+        if (self.mydict['no_mapping']):
             assertStmnt = ('(assert(not (', self.currentOperator, ' Class', str(0), ' ', str(self.feVal), ')))')
         else:
             assertStmnt = ('(assert(not (', self.currentOperator, self.currentClass[0], ' ', str(self.feVal), ')))')
@@ -112,16 +111,17 @@ class AssertionVisitor(NodeVisitor):
         if (self.negOp == '~'):
             if (self.paramDict['white_box_model'] == 'DNN'):
                 assertStmnt = (
-                '(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], str(self.count - 1),
-                ' 1)', ' (not ', ' (= ', self.classNameList[1], str(self.count - 1), ' 1)', '))))')
+                    '(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], str(self.count - 1),
+                    ' 1)', ' (not ', ' (= ', self.classNameList[1], str(self.count - 1), ' 1)', '))))')
             else:
                 assertStmnt = ('(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], ' 1)',
                                ' (not ', ' (= ', self.classNameList[1], ' 1)', '))))')
         else:
             if (self.paramDict['white_box_model'] == 'DNN'):
                 assertStmnt = (
-                '(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], str(self.count - 1), ' 1)', ' ',
-                ' (= ', self.classNameList[1], str(self.count - 1), ' 1)', ')))')
+                    '(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], str(self.count - 1), ' 1)',
+                    ' ',
+                    ' (= ', self.classNameList[1], str(self.count - 1), ' 1)', ')))')
             else:
                 assertStmnt = ('(assert(not (', self.currentOperator, ' (= ', self.classNameList[0], ' 1)', ' ',
                                ' (= ', self.classNameList[1], ' 1)', ')))')
@@ -139,4 +139,3 @@ class AssertionVisitor(NodeVisitor):
 
         else:
             raise Exception("No. of feature vectors do not match with the assumption")
-

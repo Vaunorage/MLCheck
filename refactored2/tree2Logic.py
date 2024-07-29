@@ -2,6 +2,8 @@ import pandas as pd
 import csv as cv
 import numpy as np
 
+from refactored2.util import local_load
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -168,9 +170,11 @@ def funcConv(dfT, no_of_instances):
     min_val = 0
     max_val = 0
 
-    with open('files/feNameType.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        feName_type = dict(reader)
+    # with open('files/feNameType.csv') as csv_file:
+    #     reader = cv.reader(csv_file)
+    #     feName_type = dict(reader)
+
+    feName_type = local_load('feNameType')
 
     with open('files/TreeOutput.txt') as f1:
         content = f1.readlines()

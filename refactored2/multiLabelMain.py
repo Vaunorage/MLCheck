@@ -16,6 +16,8 @@ from refactored2 import trainDecTree, tree2Logic, ReadZ3Output
 from refactored2 import processCandCex, util
 from joblib import dump, load
 
+from refactored2.util import local_load
+
 
 class generateData:
 
@@ -24,9 +26,7 @@ class generateData:
         self.typeArr = feTypeArr
         self.minArr = minValArr
         self.maxArr = maxValArr
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.paramDict = local_load('param_dict')
 
     # function to search for duplicate test data
     def binSearch(self, alist, item):
@@ -87,7 +87,7 @@ class generateData:
             writer.writerow(self.nameArr)
             writer.writerows(testMatrix)
 
-        if self.paramDict['train_data_available'] == 'True':
+        if self.paramDict['train_data_available']:
             dfTrainData = pd.read_csv(self.paramDict['train_data_loc'])
             self.generateTestTrain(dfTrainData, int(self.paramDict['train_ratio']))
 
@@ -206,9 +206,7 @@ class readXmlFile:
 class makeOracleData:
     def __init__(self, model, train_data, train_data_loc):
         self.model = model
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.paramDict = local_load('param_dict')
 
     def funcGenOracle(self):
         noOfClasses = int(self.paramDict['no_of_class'])
@@ -323,9 +321,7 @@ class multiLabelPropCheck:
 class runChecker:
     def __init__(self):
         self.df = pd.read_csv('files/OracleData.csv')
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.paramDict = local_load('param_dict')
         if 'model_path' in self.paramDict:
             self.model = load(self.paramDict['model_path'])
         else:
@@ -458,7 +454,7 @@ class runChecker:
                 if count == 0:
                     print('No CEX is found by the checker at the first trial')
                     return 0
-                elif (count != 0) and (self.mul_cex == 'True'):
+                elif (count != 0) and (self.mul_cex):
                     dfCexSet = pd.read_csv('files/CexSet.csv')
                     if round(dfCexSet.shape[0] / self.no_of_params) == 0:
                         print('No CEX is found')
@@ -466,7 +462,7 @@ class runChecker:
                     print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                     self.addModelPred()
                     return round(dfCexSet.shape[0] / self.no_of_params)
-                elif (count != 0) and (self.mul_cex == 'False'):
+                elif (count != 0) and (self.mul_cex):
                     print('No Cex is found after ' + str(count) + ' no. of trials')
                     return 0
 
@@ -479,7 +475,7 @@ class runChecker:
                 if round(dfCand.shape[0] / self.no_of_params) == 0:
                     count_cand_zero += 1
                     if count_cand_zero == MAX_CAND_ZERO:
-                        if self.mul_cex == 'True':
+                        if self.mul_cex:
                             dfCexSet = pd.read_csv('files/CexSet.csv')
                             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                             if round(dfCexSet.shape[0] / self.no_of_params) > 0:
@@ -514,7 +510,7 @@ class runChecker:
                             temp_add_oracle.append(X[testIndx])
                             testIndx += 1
                     if temp_count == self.no_of_params:
-                        if self.mul_cex == 'True':
+                        if self.mul_cex:
                             with open('files/CexSet.csv', 'a', newline='') as csvfile:
                                 writer = cv.writer(csvfile)
                                 writer.writerows(temp_store)

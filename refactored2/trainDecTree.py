@@ -12,7 +12,7 @@ def functrainDecTree():
     model = DecisionTreeClassifier(criterion="entropy", splitter="best", max_depth=None, min_samples_split=2, 
                          min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None)
     model = model.fit(X, Y)
-    dump(model, 'Model/decTreeApprox.joblib')
+    dump(model, 'files/Model/decTreeApprox.joblib')
 
     return model
 

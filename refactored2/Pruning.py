@@ -6,6 +6,8 @@ import os
 from refactored2 import ReadZ3Output
 from sklearn.tree import _tree
 
+from refactored2.util import local_load
+
 
 def getDataType(value, dfOrig, i):
     data_type = str(dfOrig.dtypes[i])
@@ -202,11 +204,9 @@ def funcPrunInst(dfOrig, dnn_flag):
         writer = cv.writer(csvfile)
         writer.writerow(fieldnames)
 
-    with open('files/param_dict.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        paramDict = dict(reader)
+    paramDict = local_load('param_dict')
 
-    if (paramDict['multi_label'] == 'True'):
+    if (paramDict['multi_label']):
         noClass = int(paramDict['no_of_class'])
     else:
         noClass = 1
@@ -244,7 +244,7 @@ def funcPrunInst(dfOrig, dnn_flag):
             if 'e' in digit:
                 dig = digit.split('e')
                 digit = dig[0]
-            if ((int(paramDict['no_of_params']) == 1) and (paramDict['multi_label'] == 'True') and (
+            if ((int(paramDict['no_of_params']) == 1) and (paramDict['multi_label']) and (
                     paramDict['white_box_model'] == 'Decision tree')):
                 fileTogFe.write("(assert (not (= " + name + " " + digit + "))) \n")
             else:
@@ -274,14 +274,13 @@ def funcPrunBranch(dfOrig, tree_model):
         writer = cv.writer(csvfile)
         writer.writerow(fieldnames)
 
-    with open('files/param_dict.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        paramDict = dict(reader)
+
+    paramDict = local_load('param_dict')
 
     dfRead = pd.read_csv('files/TestDataSMTMain.csv')
 
     for row in range(0, dfRead.shape[0]):
-        if (paramDict['multi_label'] == 'True'):
+        if (paramDict['multi_label']):
             funcgetPath4multiLbl(tree_model, dfOrig, row, int(paramDict['no_of_params']))
         else:
             funcgetPath(tree_model, dfOrig, row)

@@ -1,3 +1,4 @@
+import json
 import pickle
 
 import numpy as np
@@ -11,18 +12,28 @@ from paths import HERE
 def local_save(var, var_name):
     var_path = HERE.joinpath(f"refactored2/files/{var_name}")
     var_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
+
     if isinstance(var, pd.DataFrame):
         var_path = var_path.with_suffix('.csv')
-        var.to_csv(var_path, index=False)
+        if var_path.exists():
+            var.to_csv(var_path, mode='a', header=False, index=False)
+        else:
+            var.to_csv(var_path, index=False)
     elif isinstance(var, dict):
         var_path = var_path.with_suffix('.json')
         with open(var_path, 'w') as file:
             json.dump(var, file)
     else:
         var_path = var_path.with_suffix('.pkl')
-        with open(var_path, 'wb') as file:
-            pickle.dump(var, file)
-    print(f"Data has been saved to '{var_path}'")
+        if var_path.exists():
+            with open(var_path, 'rb') as file:
+                existing_data = pickle.load(file)
+            combined_data = existing_data + var if isinstance(existing_data, list) else [existing_data, var]
+            with open(var_path, 'wb') as file:
+                pickle.dump(combined_data, file)
+        else:
+            with open(var_path, 'wb') as file:
+                pickle.dump(var, file)
 
 
 def local_load(var_name):
@@ -30,17 +41,14 @@ def local_load(var_name):
     var_path_json = HERE.joinpath(f"refactored2/files/{var_name}.json")
     var_path_pkl = HERE.joinpath(f"refactored2/files/{var_name}.pkl")
 
-    if var_path_csv.exists():
-        data = pd.read_csv(var_path_csv)
-        print(f"Data loaded as pandas DataFrame from '{var_path_csv}'")
-    elif var_path_json.exists():
+    if var_path_json.exists():
         with open(var_path_json, 'r') as file:
             data = json.load(file)
-        print(f"Data loaded as dictionary from '{var_path_json}'")
+    elif var_path_csv.exists():
+        data = pd.read_csv(var_path_csv)
     elif var_path_pkl.exists():
         with open(var_path_pkl, 'rb') as file:
             data = pickle.load(file)
-        print(f"Data loaded using pickle from '{var_path_pkl}'")
     else:
         raise FileNotFoundError(f"No saved data found with base name '{var_name}'")
 
@@ -57,10 +65,8 @@ def file_len(fname):
 
 
 def convDataInst(X, df, j, no_of_class):
-    with open('files/param_dict.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        paramDict = dict(reader)
-    if (paramDict['multi_label'] == 'False'):
+    paramDict = local_load('param_dict')
+    if (paramDict['multi_label']):
         no_of_class = 1
     data_inst = np.zeros((1, df.shape[1] - no_of_class))
     if (j > X.shape[0]):
@@ -79,7 +85,7 @@ def funcAdd2Oracle(data):
 def funcCreateOracle(no_of_class, multi_label, model):
     df = pd.read_csv('files/TestingData.csv')
     data = df.values
-    if multi_label == 'False':
+    if multi_label:
         X = data[:, :-1]
         predict_class = model.predict(X)
         for i in range(0, X.shape[0]):

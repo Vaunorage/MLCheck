@@ -5,11 +5,11 @@ from refactored2 import util
 import os
 import re
 
+from refactored2.util import local_load
+
 
 def funcConvZ3OutToData(df):
-    with open('files/param_dict.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        paramDict = dict(reader)
+    paramDict = local_load('param_dict')
     no_of_params = int(paramDict['no_of_params'])
     testMatrix = np.zeros(((no_of_params), df.shape[1]))
 
@@ -27,7 +27,6 @@ def funcConvZ3OutToData(df):
             writer.writerows(testMatrix)
 
         dfAgain = pd.read_csv('files/TestDataSMT.csv')
-        nums = re.compile(r"[+-]?\d+(?:\.\d+)?")
         if ('unknown' in file_content[0]):
             raise Exception('Encoding problem')
         if ('model is not available' in file_content[1]):
@@ -44,7 +43,7 @@ def funcConvZ3OutToData(df):
                 else:
                     for j in range(0, df.columns.values.shape[0]):
                         for param_no in range(0, no_of_params):
-                            if (paramDict['multi_label'] == 'True' and no_of_params == 1 and paramDict[
+                            if (paramDict['multi_label'] and no_of_params == 1 and paramDict[
                                 'white_box_model'] == 'Decision tree'):
                                 fe_add = ' '
                             else:

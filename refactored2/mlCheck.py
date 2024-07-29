@@ -14,6 +14,8 @@ from joblib import dump, load
 from refactored2 import multiLabelMain
 import time
 
+from refactored2.util import local_save, local_load
+
 
 class generateData:
 
@@ -22,9 +24,8 @@ class generateData:
         self.typeArr = feTypeArr
         self.minArr = minValArr
         self.maxArr = maxValArr
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.paramDict = local_load('param_dict')
+        # print('ss')
 
     def binSearch(self, alist, item):
         if len(alist) == 0:
@@ -88,7 +89,7 @@ class generateData:
             writer.writerow(self.nameArr)
             writer.writerows(testMatrix)
 
-        if self.paramDict['train_data_available'] == 'True':
+        if self.paramDict['train_data_available']:
             dfTrainData = pd.read_csv(self.paramDict['train_data_loc'])
             self.generateTestTrain(dfTrainData, int(self.paramDict['train_ratio']))
 
@@ -145,9 +146,7 @@ class makeOracleData:
 
     def __init__(self, model):
         self.model = model
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.paramDict = local_load('param_dict')
 
     def funcGenOracle(self):
         dfTest = pd.read_csv('files/TestingData.csv')
@@ -276,6 +275,7 @@ class propCheck:
                     writer = cv.writer(csv_file)
                     for key, value in self.paramDict.items():
                         writer.writerow([key, value])
+                local_save(self.paramDict, 'param_dict')
             except IOError:
                 print("I/O error")
 
@@ -284,6 +284,12 @@ class propCheck:
             feTypeArr = df.dtypes.apply(str).tolist()
             minValArr = df.min().tolist()
             maxValArr = df.max().tolist()
+
+            # with open('files/feNameType.csv') as csv_file:
+            #     reader = cv.reader(csv_file)
+            #     feName_type = dict(reader)
+            local_save(df.dtypes.apply(str).to_dict(), 'feNameType')
+
             genDataObj = generateData(feNameArr, feTypeArr, minValArr, maxValArr)
             genDataObj.funcGenerateTestData()
             gen_oracle = makeOracleData(self.model)
@@ -297,9 +303,7 @@ class runChecker:
         f = open('files/MUTWeight.txt', 'r')
         self.MUTcontent = f.readline()
         f.close()
-        with open('files/param_dict.csv') as csv_file:
-            reader = cv.reader(csv_file)
-            self.paramDict = dict(reader)
+        self.paramDict = local_load('param_dict')
 
         if self.MUTcontent == 'False':
             self.model_type = self.paramDict['model_type']
@@ -473,7 +477,7 @@ class runChecker:
                 if count == 0:
                     print('No CEX is found by the checker at the first trial')
                     return 0
-                elif (count != 0) and (self.mul_cex == 'True'):
+                elif (count != 0) and (self.mul_cex):
                     dfCexSet = pd.read_csv('files/CexSet.csv')
                     if round(dfCexSet.shape[0] / self.no_of_params) == 0:
                         print('No CEX is found')
@@ -481,7 +485,7 @@ class runChecker:
                     print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                     self.addModelPred()
                     return round(dfCexSet.shape[0] / self.no_of_params)
-                elif (count != 0) and (self.mul_cex == 'False'):
+                elif (count != 0) and (self.mul_cex):
                     print('No Cex is found after ' + str(count) + ' no. of trials')
                     return 0
             else:
@@ -493,7 +497,7 @@ class runChecker:
                 if round(dfCand.shape[0] / self.no_of_params) == 0:
                     count_cand_zero += 1
                     if count_cand_zero == MAX_CAND_ZERO:
-                        if self.mul_cex == 'True':
+                        if self.mul_cex:
                             dfCexSet = pd.read_csv('files/CexSet.csv')
                             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                             if round(dfCexSet.shape[0] / self.no_of_params) > 0:
@@ -527,7 +531,7 @@ class runChecker:
                             temp_add_oracle.append(X[testIndx])
                             testIndx += 1
                     if temp_count == self.no_of_params:
-                        if self.mul_cex == 'True':
+                        if self.mul_cex:
                             with open('files/CexSet.csv', 'a', newline='') as csvfile:
                                 writer = cv.writer(csvfile)
                                 writer.writerows(temp_store)
@@ -659,11 +663,8 @@ def Assert(*args):
     tree = grammar.parse(args[0])
     assertVisitObj = assert2logic.AssertionVisitor()
     assertVisitObj.visit(tree)
-
-    with open('files/param_dict.csv') as csv_file:
-        reader = cv.reader(csv_file)
-        paramDict = dict(reader)
-    if paramDict['multi_label'] == 'True':
+    paramDict = local_load('param_dict')
+    if paramDict['multi_label']:
         start_time = time.time()
         obj_multi = multiLabelMain.runChecker()
         obj_multi.runPropCheck()

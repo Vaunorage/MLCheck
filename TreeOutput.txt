@@ -3,7 +3,7 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
   {
     if occupation <= 7.5:
     {
-      if native_country <= 10.5:
+      if native_country <= 7.5:
       {
         if workclass <= 2.5:
         {
@@ -13,46 +13,39 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
             {
               if hours_per_week <= 17.0:
               {
-                if hours_per_week <= 11.0:
+                if workclass <= 0.5:
                 {
-                  return 0
-                }
-                else:  # if hours_per_week > 11.0
-                {
-                  if workclass <= 0.5:
-                  {
-                    if occupation <= 1.5:
-                    {
-                      return 1
-                    }
-                    else:  # if occupation > 1.5
-                    {
-                      if age <= 5.0:
-                      {
-                        return 0
-                      }
-                      else:  # if age > 5.0
-                      {
-                        return 1
-                      }
-                    }
-                  }
-                  else:  # if workclass > 0.5
+                  if hours_per_week <= 11.0:
                   {
                     return 0
                   }
+                  else:  # if hours_per_week > 11.0
+                  {
+                    if age <= 3.5:
+                    {
+                      if occupation <= 1.0:
+                      {
+                        return 1
+                      }
+                      else:  # if occupation > 1.0
+                      {
+                        return 0
+                      }
+                    }
+                    else:  # if age > 3.5
+                    {
+                      return 1
+                    }
+                  }
+                }
+                else:  # if workclass > 0.5
+                {
+                  return 0
                 }
               }
               else:  # if hours_per_week > 17.0
               {
-                if race <= 0.5:
-                {
-                  return 1
-                }
-                else:  # if race > 0.5
-                {
-                  return 0
-                }
+                return 1
               }
             }
             else:  # if occupation > 2.5
@@ -67,11 +60,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                     {
                       if fnlwgt <= 3.5:
                       {
-                        if education <= 0.5:
+                        if fnlwgt <= 2.0:
                         {
                           return 0
                         }
-                        else:  # if education > 0.5
+                        else:  # if fnlwgt > 2.0
                         {
                           return 1
                         }
@@ -92,13 +85,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                     {
                       if workclass <= 0.5:
                       {
-                        if hours_per_week <= 17.5:
-                        {
-                          return 0
-                        }
-                        else:  # if hours_per_week > 17.5
+                        if fnlwgt <= 8.5:
                         {
                           return 1
+                        }
+                        else:  # if fnlwgt > 8.5
+                        {
+                          return 0
                         }
                       }
                       else:  # if workclass > 0.5
@@ -125,7 +118,7 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
           }
           else:  # if hours_per_week > 29.0
           {
-            if race <= 0.5:
+            if race <= 3.5:
             {
               if hours_per_week <= 36.5:
               {
@@ -200,19 +193,19 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                 {
                   if fnlwgt <= 11.0:
                   {
-                    if occupation <= 3.5:
+                    if hours_per_week <= 32.5:
                     {
                       return 1
                     }
-                    else:  # if occupation > 3.5
+                    else:  # if hours_per_week > 32.5
                     {
-                      if capital_gain <= 3.5:
-                      {
-                        return 0
-                      }
-                      else:  # if capital_gain > 3.5
+                      if occupation <= 3.5:
                       {
                         return 1
+                      }
+                      else:  # if occupation > 3.5
+                      {
+                        return 0
                       }
                     }
                   }
@@ -224,92 +217,99 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               }
               else:  # if hours_per_week > 36.5
               {
-                if native_country <= 6.5:
+                if occupation <= 6.5:
                 {
-                  if occupation <= 6.5:
+                  if race <= 0.5:
                   {
                     return 1
                   }
-                  else:  # if occupation > 6.5
+                  else:  # if race > 0.5
                   {
-                    if fnlwgt <= 19.0:
+                    if native_country <= 4.0:
+                    {
+                      if occupation <= 5.5:
+                      {
+                        return 1
+                      }
+                      else:  # if occupation > 5.5
+                      {
+                        return 0
+                      }
+                    }
+                    else:  # if native_country > 4.0
                     {
                       if workclass <= 0.5:
                       {
-                        if native_country <= 2.5:
-                        {
-                          return 1
-                        }
-                        else:  # if native_country > 2.5
-                        {
-                          return 0
-                        }
+                        return 1
                       }
                       else:  # if workclass > 0.5
                       {
-                        if education <= 2.0:
-                        {
-                          return 1
-                        }
-                        else:  # if education > 2.0
-                        {
-                          if fnlwgt <= 3.0:
-                          {
-                            return 1
-                          }
-                          else:  # if fnlwgt > 3.0
-                          {
-                            return 0
-                          }
-                        }
+                        return 0
                       }
-                    }
-                    else:  # if fnlwgt > 19.0
-                    {
-                      return 0
                     }
                   }
                 }
-                else:  # if native_country > 6.5
+                else:  # if occupation > 6.5
                 {
-                  if occupation <= 4.5:
+                  if fnlwgt <= 19.0:
                   {
-                    if workclass <= 1.5:
+                    if workclass <= 0.5:
                     {
-                      return 1
+                      if native_country <= 2.5:
+                      {
+                        return 1
+                      }
+                      else:  # if native_country > 2.5
+                      {
+                        return 0
+                      }
                     }
-                    else:  # if workclass > 1.5
+                    else:  # if workclass > 0.5
                     {
-                      return 0
+                      if education <= 2.0:
+                      {
+                        return 1
+                      }
+                      else:  # if education > 2.0
+                      {
+                        if hours_per_week <= 45.0:
+                        {
+                          return 0
+                        }
+                        else:  # if hours_per_week > 45.0
+                        {
+                          return 1
+                        }
+                      }
                     }
                   }
-                  else:  # if occupation > 4.5
+                  else:  # if fnlwgt > 19.0
                   {
                     return 0
                   }
                 }
               }
             }
-            else:  # if race > 0.5
+            else:  # if race > 3.5
             {
               if occupation <= 2.5:
               {
-                if relationship <= 3.5:
+                if relationship <= 3.0:
                 {
                   if workclass <= 1.5:
                   {
-                    if hours_per_week <= 32.5:
+                    if hours_per_week <= 33.0:
                     {
-                      if hours_per_week <= 31.0:
-                      {
-                        return 1
-                      }
-                      else:  # if hours_per_week > 31.0
+                      if sex <= 0.5:
                       {
                         return 0
                       }
+                      else:  # if sex > 0.5
+                      {
+                        return 1
+                      }
                     }
-                    else:  # if hours_per_week > 32.5
+                    else:  # if hours_per_week > 33.0
                     {
                       return 1
                     }
@@ -319,67 +319,32 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                     return 0
                   }
                 }
-                else:  # if relationship > 3.5
+                else:  # if relationship > 3.0
                 {
                   return 0
                 }
               }
               else:  # if occupation > 2.5
               {
-                if hours_per_week <= 55.0:
+                if hours_per_week <= 49.0:
                 {
-                  if capital_gain <= 1.0:
+                  if capital_gain <= 1.5:
                   {
-                    if race <= 3.5:
+                    if capital_loss <= 9.5:
                     {
-                      if fnlwgt <= 13.0:
-                      {
-                        if fnlwgt <= 9.5:
-                        {
-                          if occupation <= 3.5:
-                          {
-                            return 0
-                          }
-                          else:  # if occupation > 3.5
-                          {
-                            if occupation <= 5.5:
-                            {
-                              return 1
-                            }
-                            else:  # if occupation > 5.5
-                            {
-                              return 0
-                            }
-                          }
-                        }
-                        else:  # if fnlwgt > 9.5
-                        {
-                          return 0
-                        }
-                      }
-                      else:  # if fnlwgt > 13.0
-                      {
-                        return 1
-                      }
+                      return 0
                     }
-                    else:  # if race > 3.5
+                    else:  # if capital_loss > 9.5
                     {
-                      if capital_loss <= 9.5:
-                      {
-                        return 0
-                      }
-                      else:  # if capital_loss > 9.5
-                      {
-                        return 1
-                      }
+                      return 1
                     }
                   }
-                  else:  # if capital_gain > 1.0
+                  else:  # if capital_gain > 1.5
                   {
                     return 1
                   }
                 }
-                else:  # if hours_per_week > 55.0
+                else:  # if hours_per_week > 49.0
                 {
                   return 1
                 }
@@ -389,7 +354,7 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
         }
         else:  # if workclass > 2.5
         {
-          if capital_gain <= 0.5:
+          if capital_gain <= 1.0:
           {
             if occupation <= 1.5:
             {
@@ -431,11 +396,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                     }
                     else:  # if education > 7.5
                     {
-                      if education <= 10.5:
+                      if race <= 1.0:
                       {
                         return 1
                       }
-                      else:  # if education > 10.5
+                      else:  # if race > 1.0
                       {
                         return 0
                       }
@@ -454,13 +419,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                   {
                     if occupation <= 2.5:
                     {
-                      if workclass <= 4.5:
+                      if hours_per_week <= 39.0:
                       {
-                        if hours_per_week <= 35.0:
-                        {
-                          return 0
-                        }
-                        else:  # if hours_per_week > 35.0
+                        return 0
+                      }
+                      else:  # if hours_per_week > 39.0
+                      {
+                        if workclass <= 4.5:
                         {
                           if education <= 4.0:
                           {
@@ -478,10 +443,10 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                             return 1
                           }
                         }
-                      }
-                      else:  # if workclass > 4.5
-                      {
-                        return 0
+                        else:  # if workclass > 4.5
+                        {
+                          return 0
+                        }
                       }
                     }
                     else:  # if occupation > 2.5
@@ -494,20 +459,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                         }
                         else:  # if education > 2.0
                         {
-                          if occupation <= 4.5:
+                          if age <= 4.5:
                           {
-                            if education <= 6.5:
+                            return 0
+                          }
+                          else:  # if age > 4.5
+                          {
+                            if occupation <= 4.5:
                             {
                               return 1
                             }
-                            else:  # if education > 6.5
+                            else:  # if occupation > 4.5
                             {
                               return 0
                             }
-                          }
-                          else:  # if occupation > 4.5
-                          {
-                            return 0
                           }
                         }
                       }
@@ -529,13 +494,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                       {
                         if occupation <= 4.5:
                         {
-                          if race <= 1.0:
-                          {
-                            return 1
-                          }
-                          else:  # if race > 1.0
+                          if fnlwgt <= 1.5:
                           {
                             return 0
+                          }
+                          else:  # if fnlwgt > 1.5
+                          {
+                            return 1
                           }
                         }
                         else:  # if occupation > 4.5
@@ -575,13 +540,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               }
             }
           }
-          else:  # if capital_gain > 0.5
+          else:  # if capital_gain > 1.0
           {
             return 1
           }
         }
       }
-      else:  # if native_country > 10.5
+      else:  # if native_country > 7.5
       {
         if capital_gain <= 1.0:
         {
@@ -589,11 +554,25 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
           {
             if hours_per_week <= 53.0:
             {
-              if native_country <= 14.0:
+              if native_country <= 17.5:
               {
                 if occupation <= 1.5:
                 {
-                  return 1
+                  if age <= 3.5:
+                  {
+                    return 0
+                  }
+                  else:  # if age > 3.5
+                  {
+                    if sex <= 0.5:
+                    {
+                      return 0
+                    }
+                    else:  # if sex > 0.5
+                    {
+                      return 1
+                    }
+                  }
                 }
                 else:  # if occupation > 1.5
                 {
@@ -603,41 +582,27 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                   }
                   else:  # if hours_per_week > 42.5
                   {
-                    if workclass <= 0.5:
+                    if occupation <= 4.5:
                     {
-                      return 1
+                      if workclass <= 0.5:
+                      {
+                        return 1
+                      }
+                      else:  # if workclass > 0.5
+                      {
+                        return 0
+                      }
                     }
-                    else:  # if workclass > 0.5
+                    else:  # if occupation > 4.5
                     {
                       return 0
                     }
                   }
                 }
               }
-              else:  # if native_country > 14.0
+              else:  # if native_country > 17.5
               {
-                if native_country <= 17.5:
-                {
-                  if native_country <= 16.5:
-                  {
-                    return 0
-                  }
-                  else:  # if native_country > 16.5
-                  {
-                    if occupation <= 1.5:
-                    {
-                      return 1
-                    }
-                    else:  # if occupation > 1.5
-                    {
-                      return 0
-                    }
-                  }
-                }
-                else:  # if native_country > 17.5
-                {
-                  return 0
-                }
+                return 0
               }
             }
             else:  # if hours_per_week > 53.0
@@ -652,13 +617,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                   }
                   else:  # if native_country > 21.0
                   {
-                    if race <= 1.5:
-                    {
-                      return 0
-                    }
-                    else:  # if race > 1.5
+                    if age <= 3.0:
                     {
                       return 1
+                    }
+                    else:  # if age > 3.0
+                    {
+                      return 0
                     }
                   }
                 }
@@ -682,18 +647,18 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
         {
           if fnlwgt <= 3.5:
           {
-            if race <= 0.5:
+            if workclass <= 0.5:
             {
-              if occupation <= 2.0:
-              {
-                return 0
-              }
-              else:  # if occupation > 2.0
+              if age <= 4.5:
               {
                 return 1
               }
+              else:  # if age > 4.5
+              {
+                return 0
+              }
             }
-            else:  # if race > 0.5
+            else:  # if workclass > 0.5
             {
               return 1
             }
@@ -735,11 +700,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               }
               else:  # if hours_per_week > 39.5
               {
-                if race <= 0.5:
+                if native_country <= 11.5:
                 {
                   if fnlwgt <= 14.5:
                   {
-                    if native_country <= 12.0:
+                    if race <= 0.5:
                     {
                       if age <= 2.5:
                       {
@@ -785,45 +750,45 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                         }
                       }
                     }
-                    else:  # if native_country > 12.0
+                    else:  # if race > 0.5
                     {
                       return 0
                     }
                   }
                   else:  # if fnlwgt > 14.5
                   {
-                    if age <= 4.5:
+                    if age <= 3.5:
                     {
-                      if fnlwgt <= 15.5:
+                      return 0
+                    }
+                    else:  # if age > 3.5
+                    {
+                      if fnlwgt <= 19.5:
                       {
-                        if education <= 2.5:
+                        if age <= 4.5:
+                        {
+                          if education <= 1.5:
+                          {
+                            return 0
+                          }
+                          else:  # if education > 1.5
+                          {
+                            return 1
+                          }
+                        }
+                        else:  # if age > 4.5
                         {
                           return 1
                         }
-                        else:  # if education > 2.5
-                        {
-                          return 0
-                        }
                       }
-                      else:  # if fnlwgt > 15.5
-                      {
-                        return 0
-                      }
-                    }
-                    else:  # if age > 4.5
-                    {
-                      if education <= 8.5:
-                      {
-                        return 1
-                      }
-                      else:  # if education > 8.5
+                      else:  # if fnlwgt > 19.5
                       {
                         return 0
                       }
                     }
                   }
                 }
-                else:  # if race > 0.5
+                else:  # if native_country > 11.5
                 {
                   return 0
                 }
@@ -904,7 +869,7 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
         }
         else:  # if capital_gain > 0.5
         {
-          if occupation <= 98.5:
+          if workclass <= 99.5:
           {
             if native_country <= 20.0:
             {
@@ -936,7 +901,7 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               }
             }
           }
-          else:  # if occupation > 98.5
+          else:  # if workclass > 99.5
           {
             return 0
           }
@@ -1074,13 +1039,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                       }
                       else:  # if race > 2.0
                       {
-                        if capital_gain <= 3.5:
-                        {
-                          return 0
-                        }
-                        else:  # if capital_gain > 3.5
+                        if hours_per_week <= 56.0:
                         {
                           return 1
+                        }
+                        else:  # if hours_per_week > 56.0
+                        {
+                          return 0
                         }
                       }
                     }
@@ -1088,20 +1053,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                 }
                 else:  # if workclass > 3.5
                 {
-                  if education <= 0.5:
+                  if capital_gain <= 4.0:
                   {
-                    if capital_gain <= 3.5:
-                    {
-                      return 0
-                    }
-                    else:  # if capital_gain > 3.5
+                    return 0
+                  }
+                  else:  # if capital_gain > 4.0
+                  {
+                    if capital_loss <= 2.5:
                     {
                       return 1
                     }
-                  }
-                  else:  # if education > 0.5
-                  {
-                    return 0
+                    else:  # if capital_loss > 2.5
+                    {
+                      return 0
+                    }
                   }
                 }
               }
@@ -1137,18 +1102,18 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
             {
               if hours_per_week <= 29.5:
               {
-                if occupation <= 1.5:
+                if education <= 0.5:
                 {
-                  if education <= 0.5:
+                  if occupation <= 1.5:
                   {
                     return 1
                   }
-                  else:  # if education > 0.5
+                  else:  # if occupation > 1.5
                   {
                     return 0
                   }
                 }
-                else:  # if occupation > 1.5
+                else:  # if education > 0.5
                 {
                   return 0
                 }
@@ -1182,25 +1147,25 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                         {
                           if hours_per_week <= 33.5:
                           {
-                            if capital_gain <= 0.5:
+                            if occupation <= 3.5:
                             {
-                              if sex <= 0.5:
-                              {
-                                if fnlwgt <= 4.5:
-                                {
-                                  return 1
-                                }
-                                else:  # if fnlwgt > 4.5
-                                {
-                                  return 0
-                                }
-                              }
-                              else:  # if sex > 0.5
+                              if fnlwgt <= 4.5:
                               {
                                 return 1
                               }
+                              else:  # if fnlwgt > 4.5
+                              {
+                                if sex <= 0.5:
+                                {
+                                  return 0
+                                }
+                                else:  # if sex > 0.5
+                                {
+                                  return 1
+                                }
+                              }
                             }
-                            else:  # if capital_gain > 0.5
+                            else:  # if occupation > 3.5
                             {
                               return 1
                             }
@@ -1248,11 +1213,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               {
                 if occupation <= 0.5:
                 {
-                  if education <= 8.0:
+                  if hours_per_week <= 33.5:
                   {
                     return 0
                   }
-                  else:  # if education > 8.0
+                  else:  # if hours_per_week > 33.5
                   {
                     return 1
                   }
@@ -1264,20 +1229,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               }
               else:  # if capital_gain > 0.5
               {
-                if education <= 2.5:
+                if race <= 1.0:
                 {
-                  return 0
-                }
-                else:  # if education > 2.5
-                {
-                  if fnlwgt <= 7.5:
+                  if hours_per_week <= 22.0:
                   {
                     return 0
                   }
-                  else:  # if fnlwgt > 7.5
+                  else:  # if hours_per_week > 22.0
                   {
                     return 1
                   }
+                }
+                else:  # if race > 1.0
+                {
+                  return 0
                 }
               }
             }
@@ -1289,9 +1254,9 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
         }
         else:  # if hours_per_week > 35.5
         {
-          if martial_status <= 1.5:
+          if race <= 0.5:
           {
-            if race <= 0.5:
+            if martial_status <= 1.5:
             {
               if workclass <= 2.5:
               {
@@ -1307,17 +1272,17 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                       }
                       else:  # if workclass > 0.5
                       {
-                        if occupation <= 1.5:
+                        if relationship <= 4.0:
                         {
                           return 1
                         }
-                        else:  # if occupation > 1.5
+                        else:  # if relationship > 4.0
                         {
-                          if relationship <= 4.0:
+                          if occupation <= 1.5:
                           {
                             return 1
                           }
-                          else:  # if relationship > 4.0
+                          else:  # if occupation > 1.5
                           {
                             return 0
                           }
@@ -1404,11 +1369,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                               }
                               else:  # if age > 4.5
                               {
-                                if fnlwgt <= 7.5:
+                                if education <= 2.0:
                                 {
                                   return 1
                                 }
-                                else:  # if fnlwgt > 7.5
+                                else:  # if education > 2.0
                                 {
                                   return 0
                                 }
@@ -1435,13 +1400,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                     }
                     else:  # if fnlwgt > 20.5
                     {
-                      if occupation <= 3.0:
-                      {
-                        return 1
-                      }
-                      else:  # if occupation > 3.0
+                      if age <= 4.5:
                       {
                         return 0
+                      }
+                      else:  # if age > 4.5
+                      {
+                        return 1
                       }
                     }
                   }
@@ -1484,180 +1449,110 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                 }
               }
             }
-            else:  # if race > 0.5
-            {
-              if fnlwgt <= 6.5:
-              {
-                if occupation <= 1.5:
-                {
-                  if workclass <= 2.0:
-                  {
-                    return 1
-                  }
-                  else:  # if workclass > 2.0
-                  {
-                    return 0
-                  }
-                }
-                else:  # if occupation > 1.5
-                {
-                  if hours_per_week <= 49.0:
-                  {
-                    return 0
-                  }
-                  else:  # if hours_per_week > 49.0
-                  {
-                    if age <= 3.5:
-                    {
-                      return 1
-                    }
-                    else:  # if age > 3.5
-                    {
-                      return 0
-                    }
-                  }
-                }
-              }
-              else:  # if fnlwgt > 6.5
-              {
-                if education <= 0.5:
-                {
-                  if capital_loss <= 3.0:
-                  {
-                    if fnlwgt <= 11.0:
-                    {
-                      if hours_per_week <= 50.0:
-                      {
-                        return 0
-                      }
-                      else:  # if hours_per_week > 50.0
-                      {
-                        return 1
-                      }
-                    }
-                    else:  # if fnlwgt > 11.0
-                    {
-                      return 0
-                    }
-                  }
-                  else:  # if capital_loss > 3.0
-                  {
-                    return 1
-                  }
-                }
-                else:  # if education > 0.5
-                {
-                  return 0
-                }
-              }
-            }
-          }
-          else:  # if martial_status > 1.5
-          {
-            if capital_loss <= 1.5:
+            else:  # if martial_status > 1.5
             {
               if occupation <= 1.5:
               {
                 if native_country <= 1.5:
                 {
-                  if race <= 1.5:
+                  if workclass <= 0.5:
                   {
-                    if workclass <= 0.5:
+                    if martial_status <= 2.5:
                     {
-                      if martial_status <= 2.5:
+                      if relationship <= 3.5:
                       {
-                        if relationship <= 3.5:
+                        if fnlwgt <= 11.5:
                         {
-                          if fnlwgt <= 11.5:
+                          return 1
+                        }
+                        else:  # if fnlwgt > 11.5
+                        {
+                          if relationship <= 2.0:
                           {
                             return 1
                           }
-                          else:  # if fnlwgt > 11.5
+                          else:  # if relationship > 2.0
                           {
-                            if relationship <= 2.0:
+                            if hours_per_week <= 42.0:
                             {
-                              return 1
-                            }
-                            else:  # if relationship > 2.0
-                            {
-                              if hours_per_week <= 42.0:
+                              if occupation <= 0.5:
                               {
-                                if occupation <= 0.5:
+                                return 1
+                              }
+                              else:  # if occupation > 0.5
+                              {
+                                if age <= 2.5:
                                 {
-                                  return 1
+                                  return 0
                                 }
-                                else:  # if occupation > 0.5
+                                else:  # if age > 2.5
                                 {
-                                  if age <= 2.5:
+                                  if education <= 5.0:
+                                  {
+                                    return 1
+                                  }
+                                  else:  # if education > 5.0
                                   {
                                     return 0
                                   }
-                                  else:  # if age > 2.5
-                                  {
-                                    if fnlwgt <= 16.0:
-                                    {
-                                      return 1
-                                    }
-                                    else:  # if fnlwgt > 16.0
-                                    {
-                                      return 0
-                                    }
-                                  }
                                 }
                               }
-                              else:  # if hours_per_week > 42.0
-                              {
-                                return 1
-                              }
                             }
-                          }
-                        }
-                        else:  # if relationship > 3.5
-                        {
-                          if occupation <= 0.5:
-                          {
-                            return 1
-                          }
-                          else:  # if occupation > 0.5
-                          {
-                            if fnlwgt <= 5.5:
+                            else:  # if hours_per_week > 42.0
                             {
-                              if relationship <= 4.5:
-                              {
-                                return 1
-                              }
-                              else:  # if relationship > 4.5
-                              {
-                                return 0
-                              }
-                            }
-                            else:  # if fnlwgt > 5.5
-                            {
-                              return 0
+                              return 1
                             }
                           }
                         }
                       }
-                      else:  # if martial_status > 2.5
+                      else:  # if relationship > 3.5
                       {
-                        if hours_per_week <= 47.5:
+                        if occupation <= 0.5:
                         {
-                          return 0
+                          return 1
                         }
-                        else:  # if hours_per_week > 47.5
+                        else:  # if occupation > 0.5
                         {
-                          if education <= 1.5:
+                          if fnlwgt <= 5.5:
                           {
-                            return 1
+                            if relationship <= 4.5:
+                            {
+                              return 1
+                            }
+                            else:  # if relationship > 4.5
+                            {
+                              return 0
+                            }
                           }
-                          else:  # if education > 1.5
+                          else:  # if fnlwgt > 5.5
                           {
                             return 0
                           }
                         }
                       }
                     }
-                    else:  # if workclass > 0.5
+                    else:  # if martial_status > 2.5
+                    {
+                      if hours_per_week <= 47.5:
+                      {
+                        return 0
+                      }
+                      else:  # if hours_per_week > 47.5
+                      {
+                        if relationship <= 2.0:
+                        {
+                          return 1
+                        }
+                        else:  # if relationship > 2.0
+                        {
+                          return 0
+                        }
+                      }
+                    }
+                  }
+                  else:  # if workclass > 0.5
+                  {
+                    if capital_loss <= 6.5:
                     {
                       if workclass <= 1.5:
                       {
@@ -1674,11 +1569,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                         }
                         else:  # if hours_per_week > 46.5
                         {
-                          if martial_status <= 3.0:
+                          if age <= 4.0:
                           {
                             return 1
                           }
-                          else:  # if martial_status > 3.0
+                          else:  # if age > 4.0
                           {
                             return 0
                           }
@@ -1689,14 +1584,7 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                         return 0
                       }
                     }
-                  }
-                  else:  # if race > 1.5
-                  {
-                    if hours_per_week <= 55.0:
-                    {
-                      return 0
-                    }
-                    else:  # if hours_per_week > 55.0
+                    else:  # if capital_loss > 6.5
                     {
                       return 1
                     }
@@ -1711,68 +1599,68 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               {
                 if hours_per_week <= 46.0:
                 {
-                  if relationship <= 2.0:
+                  if capital_loss <= 3.0:
                   {
-                    if sex <= 0.5:
+                    if relationship <= 2.0:
                     {
-                      if age <= 7.0:
+                      if sex <= 0.5:
                       {
-                        if fnlwgt <= 1.5:
+                        if age <= 6.0:
                         {
-                          if occupation <= 2.5:
+                          if fnlwgt <= 1.5:
                           {
-                            return 1
-                          }
-                          else:  # if occupation > 2.5
-                          {
-                            return 0
-                          }
-                        }
-                        else:  # if fnlwgt > 1.5
-                        {
-                          if age <= 2.5:
-                          {
-                            return 0
-                          }
-                          else:  # if age > 2.5
-                          {
-                            if occupation <= 2.5:
+                            if education <= 4.0:
                             {
-                              if fnlwgt <= 5.5:
-                              {
-                                return 0
-                              }
-                              else:  # if fnlwgt > 5.5
-                              {
-                                if fnlwgt <= 7.0:
-                                {
-                                  return 1
-                                }
-                                else:  # if fnlwgt > 7.0
-                                {
-                                  return 0
-                                }
-                              }
+                              return 1
                             }
-                            else:  # if occupation > 2.5
+                            else:  # if education > 4.0
                             {
                               return 0
                             }
                           }
+                          else:  # if fnlwgt > 1.5
+                          {
+                            if age <= 2.5:
+                            {
+                              return 0
+                            }
+                            else:  # if age > 2.5
+                            {
+                              if fnlwgt <= 6.5:
+                              {
+                                if workclass <= 2.0:
+                                {
+                                  if fnlwgt <= 4.0:
+                                  {
+                                    return 0
+                                  }
+                                  else:  # if fnlwgt > 4.0
+                                  {
+                                    return 1
+                                  }
+                                }
+                                else:  # if workclass > 2.0
+                                {
+                                  return 0
+                                }
+                              }
+                              else:  # if fnlwgt > 6.5
+                              {
+                                return 0
+                              }
+                            }
+                          }
+                        }
+                        else:  # if age > 6.0
+                        {
+                          return 1
                         }
                       }
-                      else:  # if age > 7.0
+                      else:  # if sex > 0.5
                       {
-                        return 1
-                      }
-                    }
-                    else:  # if sex > 0.5
-                    {
-                      if occupation <= 3.5:
-                      {
-                        if fnlwgt <= 11.5:
+                        if occupation <= 3.5:
                         {
-                          if race <= 0.5:
+                          if fnlwgt <= 12.0:
                           {
                             if occupation <= 2.5:
                             {
@@ -1811,25 +1699,18 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                               }
                             }
                           }
-                          else:  # if race > 0.5
+                          else:  # if fnlwgt > 12.0
                           {
                             return 0
                           }
                         }
-                        else:  # if fnlwgt > 11.5
+                        else:  # if occupation > 3.5
                         {
                           return 0
                         }
                       }
-                      else:  # if occupation > 3.5
-                      {
-                        return 0
-                      }
                     }
-                  }
-                  else:  # if relationship > 2.0
-                  {
-                    if capital_gain <= 0.5:
+                    else:  # if relationship > 2.0
                     {
                       if occupation <= 2.5:
                       {
@@ -1843,13 +1724,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                               {
                                 if fnlwgt <= 3.0:
                                 {
-                                  if relationship <= 4.0:
-                                  {
-                                    return 1
-                                  }
-                                  else:  # if relationship > 4.0
+                                  if sex <= 0.5:
                                   {
                                     return 0
+                                  }
+                                  else:  # if sex > 0.5
+                                  {
+                                    return 1
                                   }
                                 }
                                 else:  # if fnlwgt > 3.0
@@ -1880,39 +1761,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                           }
                           else:  # if age > 4.5
                           {
-                            if education <= 8.5:
+                            if education <= 6.0:
                             {
                               return 0
                             }
-                            else:  # if education > 8.5
-                            {
-                              if fnlwgt <= 9.0:
-                              {
-                                return 1
-                              }
-                              else:  # if fnlwgt > 9.0
-                              {
-                                return 0
-                              }
-                            }
-                          }
-                        }
-                      }
-                      else:  # if occupation > 2.5
-                      {
-                        if hours_per_week <= 44.5:
-                        {
-                          return 0
-                        }
-                        else:  # if hours_per_week > 44.5
-                        {
-                          if age <= 3.5:
-                          {
-                            return 0
-                          }
-                          else:  # if age > 3.5
-                          {
-                            if occupation <= 3.5:
+                            else:  # if education > 6.0
                             {
                               if native_country <= 10.0:
                               {
@@ -1923,17 +1776,59 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                                 return 0
                               }
                             }
-                            else:  # if occupation > 3.5
+                          }
+                        }
+                      }
+                      else:  # if occupation > 2.5
+                      {
+                        if age <= 1.5:
+                        {
+                          return 1
+                        }
+                        else:  # if age > 1.5
+                        {
+                          if hours_per_week <= 44.0:
+                          {
+                            return 0
+                          }
+                          else:  # if hours_per_week > 44.0
+                          {
+                            if age <= 3.5:
                             {
                               return 0
+                            }
+                            else:  # if age > 3.5
+                            {
+                              if occupation <= 3.5:
+                              {
+                                if martial_status <= 3.5:
+                                {
+                                  return 1
+                                }
+                                else:  # if martial_status > 3.5
+                                {
+                                  return 0
+                                }
+                              }
+                              else:  # if occupation > 3.5
+                              {
+                                return 0
+                              }
                             }
                           }
                         }
                       }
                     }
-                    else:  # if capital_gain > 0.5
+                  }
+                  else:  # if capital_loss > 3.0
+                  {
+                    if native_country <= 56.0:
                     {
                       return 1
+                    }
+                    else:  # if native_country > 56.0
+                    {
+                      return 0
                     }
                   }
                 }
@@ -1941,102 +1836,28 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                 {
                   if martial_status <= 2.5:
                   {
-                    if native_country <= 1.5:
+                    if native_country <= 2.5:
                     {
-                      if race <= 2.5:
+                      if sex <= 0.5:
                       {
-                        if sex <= 0.5:
+                        if occupation <= 3.5:
                         {
-                          if occupation <= 3.5:
-                          {
-                            if hours_per_week <= 51.0:
-                            {
-                              if fnlwgt <= 13.5:
-                              {
-                                if workclass <= 0.5:
-                                {
-                                  if hours_per_week <= 49.0:
-                                  {
-                                    return 0
-                                  }
-                                  else:  # if hours_per_week > 49.0
-                                  {
-                                    return 1
-                                  }
-                                }
-                                else:  # if workclass > 0.5
-                                {
-                                  return 0
-                                }
-                              }
-                              else:  # if fnlwgt > 13.5
-                              {
-                                return 0
-                              }
-                            }
-                            else:  # if hours_per_week > 51.0
-                            {
-                              return 1
-                            }
-                          }
-                          else:  # if occupation > 3.5
-                          {
-                            if fnlwgt <= 6.0:
-                            {
-                              if education <= 1.5:
-                              {
-                                return 0
-                              }
-                              else:  # if education > 1.5
-                              {
-                                return 1
-                              }
-                            }
-                            else:  # if fnlwgt > 6.0
-                            {
-                              return 0
-                            }
-                          }
-                        }
-                        else:  # if sex > 0.5
-                        {
-                          if hours_per_week <= 51.5:
+                          if hours_per_week <= 51.0:
                           {
                             if workclass <= 0.5:
                             {
-                              if relationship <= 4.0:
+                              if fnlwgt <= 13.5:
                               {
-                                if fnlwgt <= 10.5:
+                                if hours_per_week <= 49.0:
+                                {
+                                  return 0
+                                }
+                                else:  # if hours_per_week > 49.0
                                 {
                                   return 1
                                 }
-                                else:  # if fnlwgt > 10.5
-                                {
-                                  if age <= 2.5:
-                                  {
-                                    if occupation <= 3.5:
-                                    {
-                                      if fnlwgt <= 19.5:
-                                      {
-                                        return 1
-                                      }
-                                      else:  # if fnlwgt > 19.5
-                                      {
-                                        return 0
-                                      }
-                                    }
-                                    else:  # if occupation > 3.5
-                                    {
-                                      return 0
-                                    }
-                                  }
-                                  else:  # if age > 2.5
-                                  {
-                                    return 1
-                                  }
-                                }
                               }
-                              else:  # if relationship > 4.0
+                              else:  # if fnlwgt > 13.5
                               {
                                 return 0
                               }
@@ -2046,78 +1867,236 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                               return 0
                             }
                           }
-                          else:  # if hours_per_week > 51.5
+                          else:  # if hours_per_week > 51.0
                           {
-                            if workclass <= 3.0:
+                            return 1
+                          }
+                        }
+                        else:  # if occupation > 3.5
+                        {
+                          if fnlwgt <= 6.0:
+                          {
+                            if education <= 1.5:
+                            {
+                              return 0
+                            }
+                            else:  # if education > 1.5
                             {
                               return 1
                             }
-                            else:  # if workclass > 3.0
-                            {
-                              if hours_per_week <= 72.0:
-                              {
-                                return 0
-                              }
-                              else:  # if hours_per_week > 72.0
-                              {
-                                return 1
-                              }
-                            }
+                          }
+                          else:  # if fnlwgt > 6.0
+                          {
+                            return 0
                           }
                         }
                       }
-                      else:  # if race > 2.5
+                      else:  # if sex > 0.5
                       {
-                        if hours_per_week <= 70.0:
+                        if hours_per_week <= 51.5:
                         {
-                          return 0
+                          if workclass <= 0.5:
+                          {
+                            if relationship <= 4.0:
+                            {
+                              if fnlwgt <= 10.5:
+                              {
+                                return 1
+                              }
+                              else:  # if fnlwgt > 10.5
+                              {
+                                if age <= 2.5:
+                                {
+                                  if occupation <= 3.5:
+                                  {
+                                    if fnlwgt <= 19.5:
+                                    {
+                                      return 1
+                                    }
+                                    else:  # if fnlwgt > 19.5
+                                    {
+                                      return 0
+                                    }
+                                  }
+                                  else:  # if occupation > 3.5
+                                  {
+                                    return 0
+                                  }
+                                }
+                                else:  # if age > 2.5
+                                {
+                                  return 1
+                                }
+                              }
+                            }
+                            else:  # if relationship > 4.0
+                            {
+                              return 0
+                            }
+                          }
+                          else:  # if workclass > 0.5
+                          {
+                            return 0
+                          }
                         }
-                        else:  # if hours_per_week > 70.0
+                        else:  # if hours_per_week > 51.5
                         {
-                          return 1
+                          if workclass <= 3.0:
+                          {
+                            return 1
+                          }
+                          else:  # if workclass > 3.0
+                          {
+                            return 0
+                          }
                         }
                       }
                     }
-                    else:  # if native_country > 1.5
+                    else:  # if native_country > 2.5
                     {
                       return 0
                     }
                   }
                   else:  # if martial_status > 2.5
                   {
-                    if hours_per_week <= 68.0:
+                    if capital_loss <= 9.5:
                     {
-                      return 0
+                      if hours_per_week <= 68.0:
+                      {
+                        return 0
+                      }
+                      else:  # if hours_per_week > 68.0
+                      {
+                        if education <= 9.0:
+                        {
+                          return 1
+                        }
+                        else:  # if education > 9.0
+                        {
+                          return 0
+                        }
+                      }
                     }
-                    else:  # if hours_per_week > 68.0
+                    else:  # if capital_loss > 9.5
                     {
-                      if martial_status <= 4.5:
+                      return 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else:  # if race > 0.5
+          {
+            if capital_loss <= 3.0:
+            {
+              if hours_per_week <= 53.5:
+              {
+                if fnlwgt <= 6.5:
+                {
+                  if occupation <= 1.5:
+                  {
+                    if martial_status <= 1.5:
+                    {
+                      if race <= 1.5:
+                      {
+                        return 0
+                      }
+                      else:  # if race > 1.5
                       {
                         return 1
                       }
-                      else:  # if martial_status > 4.5
+                    }
+                    else:  # if martial_status > 1.5
+                    {
+                      if education <= 1.5:
+                      {
+                        if race <= 1.5:
+                        {
+                          return 1
+                        }
+                        else:  # if race > 1.5
+                        {
+                          return 0
+                        }
+                      }
+                      else:  # if education > 1.5
+                      {
+                        return 0
+                      }
+                    }
+                  }
+                  else:  # if occupation > 1.5
+                  {
+                    if hours_per_week <= 49.0:
+                    {
+                      return 0
+                    }
+                    else:  # if hours_per_week > 49.0
+                    {
+                      if martial_status <= 1.5:
+                      {
+                        return 1
+                      }
+                      else:  # if martial_status > 1.5
                       {
                         return 0
                       }
                     }
                   }
                 }
-              }
-            }
-            else:  # if capital_loss > 1.5
-            {
-              if native_country <= 34.5:
-              {
-                if workclass <= 8.0:
-                {
-                  return 1
-                }
-                else:  # if workclass > 8.0
+                else:  # if fnlwgt > 6.5
                 {
                   return 0
                 }
               }
-              else:  # if native_country > 34.5
+              else:  # if hours_per_week > 53.5
+              {
+                if sex <= 0.5:
+                {
+                  if age <= 4.5:
+                  {
+                    return 0
+                  }
+                  else:  # if age > 4.5
+                  {
+                    return 1
+                  }
+                }
+                else:  # if sex > 0.5
+                {
+                  if hours_per_week <= 67.5:
+                  {
+                    if fnlwgt <= 7.5:
+                    {
+                      if fnlwgt <= 3.5:
+                      {
+                        return 0
+                      }
+                      else:  # if fnlwgt > 3.5
+                      {
+                        return 1
+                      }
+                    }
+                    else:  # if fnlwgt > 7.5
+                    {
+                      return 0
+                    }
+                  }
+                  else:  # if hours_per_week > 67.5
+                  {
+                    return 1
+                  }
+                }
+              }
+            }
+            else:  # if capital_loss > 3.0
+            {
+              if native_country <= 55.0:
+              {
+                return 1
+              }
+              else:  # if native_country > 55.0
               {
                 return 0
               }
@@ -2236,27 +2215,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               {
                 if fnlwgt <= 3.5:
                 {
-                  if fnlwgt <= 2.5:
+                  if relationship <= 2.0:
                   {
-                    return 0
-                  }
-                  else:  # if fnlwgt > 2.5
-                  {
-                    if relationship <= 2.0:
-                    {
-                      if education <= 2.5:
-                      {
-                        return 0
-                      }
-                      else:  # if education > 2.5
-                      {
-                        return 1
-                      }
-                    }
-                    else:  # if relationship > 2.0
+                    if education <= 3.5:
                     {
                       return 0
                     }
+                    else:  # if education > 3.5
+                    {
+                      return 1
+                    }
+                  }
+                  else:  # if relationship > 2.0
+                  {
+                    return 0
                   }
                 }
                 else:  # if fnlwgt > 3.5
@@ -2304,20 +2276,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                       {
                         if age <= 3.5:
                         {
-                          if education <= 4.5:
+                          if age <= 2.5:
                           {
-                            if age <= 2.5:
-                            {
-                              return 1
-                            }
-                            else:  # if age > 2.5
+                            return 1
+                          }
+                          else:  # if age > 2.5
+                          {
+                            if education <= 8.5:
                             {
                               return 0
                             }
-                          }
-                          else:  # if education > 4.5
-                          {
-                            return 1
+                            else:  # if education > 8.5
+                            {
+                              return 1
+                            }
                           }
                         }
                         else:  # if age > 3.5
@@ -2341,20 +2313,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               {
                 if hours_per_week <= 85.0:
                 {
-                  if fnlwgt <= 1.5:
+                  if age <= 5.5:
                   {
-                    if martial_status <= 1.5:
-                    {
-                      return 1
-                    }
-                    else:  # if martial_status > 1.5
+                    return 0
+                  }
+                  else:  # if age > 5.5
+                  {
+                    if education <= 5.0:
                     {
                       return 0
                     }
-                  }
-                  else:  # if fnlwgt > 1.5
-                  {
-                    return 0
+                    else:  # if education > 5.0
+                    {
+                      return 1
+                    }
                   }
                 }
                 else:  # if hours_per_week > 85.0
@@ -2373,13 +2345,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                   {
                     if hours_per_week <= 58.0:
                     {
-                      if relationship <= 2.0:
-                      {
-                        return 1
-                      }
-                      else:  # if relationship > 2.0
+                      if fnlwgt <= 12.5:
                       {
                         return 0
+                      }
+                      else:  # if fnlwgt > 12.5
+                      {
+                        return 1
                       }
                     }
                     else:  # if hours_per_week > 58.0
@@ -2403,20 +2375,20 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                   }
                   else:  # if martial_status > 1.5
                   {
-                    if hours_per_week <= 63.5:
+                    if fnlwgt <= 2.5:
                     {
-                      return 0
-                    }
-                    else:  # if hours_per_week > 63.5
-                    {
-                      if occupation <= 8.5:
-                      {
-                        return 1
-                      }
-                      else:  # if occupation > 8.5
+                      if hours_per_week <= 62.5:
                       {
                         return 0
                       }
+                      else:  # if hours_per_week > 62.5
+                      {
+                        return 1
+                      }
+                    }
+                    else:  # if fnlwgt > 2.5
+                    {
+                      return 0
                     }
                   }
                 }
@@ -2440,24 +2412,24 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                       }
                       else:  # if fnlwgt > 2.5
                       {
-                        if hours_per_week <= 85.0:
+                        if occupation <= 9.5:
                         {
-                          if occupation <= 8.5:
-                          {
-                            return 1
-                          }
-                          else:  # if occupation > 8.5
+                          if education <= 2.0:
                           {
                             return 0
                           }
-                        }
-                        else:  # if hours_per_week > 85.0
-                        {
-                          if age <= 4.0:
+                          else:  # if education > 2.0
                           {
                             return 1
                           }
-                          else:  # if age > 4.0
+                        }
+                        else:  # if occupation > 9.5
+                        {
+                          if education <= 2.5:
+                          {
+                            return 1
+                          }
+                          else:  # if education > 2.5
                           {
                             return 0
                           }
@@ -2582,11 +2554,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                   }
                   else:  # if native_country > 95.5
                   {
-                    if fnlwgt <= 37.5:
+                    if age <= 8.5:
                     {
                       return 1
                     }
-                    else:  # if fnlwgt > 37.5
+                    else:  # if age > 8.5
                     {
                       return 0
                     }
@@ -2614,11 +2586,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
               {
                 if martial_status <= 4.5:
                 {
-                  if workclass <= 74.0:
+                  if hours_per_week <= 93.0:
                   {
                     return 1
                   }
-                  else:  # if workclass > 74.0
+                  else:  # if hours_per_week > 93.0
                   {
                     return 0
                   }
@@ -2654,11 +2626,11 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
                     }
                     else:  # if native_country > 14.5
                     {
-                      if capital_gain <= 24.5:
+                      if occupation <= 67.0:
                       {
                         return 0
                       }
-                      else:  # if capital_gain > 24.5
+                      else:  # if occupation > 67.0
                       {
                         return 1
                       }
@@ -2706,13 +2678,13 @@ def tree(age, workclass, fnlwgt, education, martial_status, occupation, relation
         {
           if capital_gain <= 34.0:
           {
-            if race <= 1.5:
-            {
-              return 1
-            }
-            else:  # if race > 1.5
+            if occupation <= 97.5:
             {
               return 0
+            }
+            else:  # if occupation > 97.5
+            {
+              return 1
             }
           }
           else:  # if capital_gain > 34.0

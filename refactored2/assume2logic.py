@@ -7,6 +7,8 @@ from paths import HERE
 from refactored2 import util
 import sys
 
+from refactored2.util import local_save
+
 
 class Stack:
     def __init__(self):
@@ -249,7 +251,7 @@ class AssumptionVisitor(NodeVisitor):
             f.close()
 
     def visit_expr7(self, node, children):
-        self.varMapDict['no_assumption'] = 'True'
+        self.varMapDict['no_assumption'] = True
         self.storeMapping()
 
     def trojan_expr(self, node, children):
@@ -313,16 +315,17 @@ class AssumptionVisitor(NodeVisitor):
     def storeMapping(self):
 
         if (self.arrFlag == True):
-            self.varMapDict['no_mapping'] = 'True'
-            self.varMapDict['no_assumption'] = 'False'
+            self.varMapDict['no_mapping'] = True
+            self.varMapDict['no_assumption'] = False
         else:
-            self.varMapDict['no_mapping'] = 'False'
+            self.varMapDict['no_mapping'] = False
         try:
             with open(HERE.joinpath('refactored2/files/dict.csv'), 'w') as csv_file:
                 writer = cv.writer(csv_file)
-                for key, value in self.varMapDict.items():
-                    print(key, value)
-                    writer.writerow([key, value])
+                # for key, value in self.varMapDict.items():
+                #     print(key, value)
+                #     writer.writerow([key, value])
+            local_save(self.varMapDict, 'dict')
         except IOError:
             print("I/O error")
 
