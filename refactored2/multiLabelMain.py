@@ -447,9 +447,9 @@ class runChecker:
             tree = trainDecTree.functrainDecTree(self.no_of_class)
 
             tree2Logic.functree2LogicMain(tree, self.no_of_params)
-            util.storeAssumeAssert('files/DecSmt.smt2')
-            util.addSatOpt('files/DecSmt.smt2')
-            os.system(r"z3 files/DecSmt.smt2 > files/FinalOutput.txt")
+            util.storeAssumeAssert('files/DecSmt.txt')
+            util.addSatOpt('files/DecSmt.txt')
+            os.system(r"z3 files/DecSmt.txt > files/FinalOutput.txt")
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
                 if count == 0:

@@ -11,10 +11,18 @@ from paths import HERE
 files_folder = HERE.joinpath(f"refactored2/files")
 
 
-def delete_file(var_name):
-    var_path = files_folder.joinpath(var_name)
-    if var_path.exists() and var_path.is_file():
-        var_path.unlink()
+def local_delete(var_name):
+    deleted_files = []
+    for ext in ['.csv', '.json', '.pkl', '.txt']:
+        var_path = files_folder.joinpath(f"{var_name}{ext}")
+        if var_path.exists():
+            var_path.unlink()  # Delete the file
+            deleted_files.append(var_path)
+
+    if not deleted_files:
+        print(f"No files found to delete with base name '{var_name}'")
+
+    return deleted_files
 
 
 def local_save(var, var_name, force_rewrite=False):
@@ -64,11 +72,16 @@ def local_load(var_name):
             data = pickle.load(file)
     elif var_path_txt.exists():
         with open(var_path_txt, 'r') as file:
-            data = file.readlines()
+            data = file.read()
     else:
         raise FileNotFoundError(f"No saved data found with base name '{var_name}'")
 
     return data
+
+
+def run_z3(input_file, output_file):
+    os.system(
+        f"z3 {files_folder.joinpath(input_file).as_posix()}.txt > {files_folder.joinpath(output_file).as_posix()}.txt")
 
 
 def file_len(fname):
@@ -126,19 +139,17 @@ def addContent(file_name, f_content):
 
 
 def addSatOpt(file_name):
-    f = open(file_name, 'a')
-    f.write('\n')
-    f.write("(check-sat) \n")
-    f.write("(get-model) \n")
+    hh = "\n (check-sat) \n (get-model)"
+    local_save(hh, file_name)
 
 
 def storeAssumeAssert(file_name, no_assumption=False):
     if not no_assumption:
-        # with open('files/assumeStmnt.txt') as f2:
-        #     f2_content = f2.readlines()
         f2_content = local_load('assumeStmnt')
-        addContent(file_name, f2_content)
-    with open('files/assertStmnt.txt') as f3:
-        f3_content = f3.readlines()
-    f3_content = list(set([x.strip() for x in f3_content]))
-    addContent(file_name, f3_content)
+        local_save(f2_content, file_name)
+    f3_content = local_load('assertStmnt')
+    local_save(f3_content, file_name)
+    # with open('files/assertStmnt.txt') as f3:
+    #     f3_content = f3.readlines()
+    # f3_content = list(set([x.strip() for x in f3_content]))
+    # addContent(file_name, f3_content)

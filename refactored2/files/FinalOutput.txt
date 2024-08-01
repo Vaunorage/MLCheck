@@ -1,2 +1,59 @@
-unknown
-(error "line 1142 column 10: model is not available")
+sat
+(model 
+  (define-fun age1 () Int
+    7)
+  (define-fun hours_per_week1 () Int
+    41)
+  (define-fun Class1 () Int
+    1)
+  (define-fun sex1 () Int
+    1)
+  (define-fun workclass1 () Int
+    23)
+  (define-fun capital_gain1 () Int
+    1)
+  (define-fun capital_loss1 () Int
+    2)
+  (define-fun education1 () Int
+    0)
+  (define-fun relationship1 () Int
+    5)
+  (define-fun Class0 () Int
+    0)
+  (define-fun fnlwgt1 () Int
+    7)
+  (define-fun martial_status1 () Int
+    1)
+  (define-fun occupation1 () Int
+    5)
+  (define-fun sex0 () Int
+    0)
+  (define-fun native_country1 () Int
+    0)
+  (define-fun native_country0 () Int
+    0)
+  (define-fun hours_per_week0 () Int
+    41)
+  (define-fun capital_loss0 () Int
+    2)
+  (define-fun capital_gain0 () Int
+    1)
+  (define-fun race1 () Int
+    0)
+  (define-fun race0 () Int
+    0)
+  (define-fun relationship0 () Int
+    5)
+  (define-fun occupation0 () Int
+    5)
+  (define-fun martial_status0 () Int
+    1)
+  (define-fun education0 () Int
+    0)
+  (define-fun fnlwgt0 () Int
+    7)
+  (define-fun workclass0 () Int
+    23)
+  (define-fun age0 () Int
+    7)
+)

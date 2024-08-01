@@ -6,7 +6,7 @@ import os
 from refactored2 import ReadZ3Output
 from sklearn.tree import _tree
 
-from refactored2.util import local_load
+from refactored2.util import local_load, local_save
 
 
 def getDataType(value, dfOrig, i):
@@ -20,58 +20,79 @@ def getDataType(value, dfOrig, i):
 
 def funcAddCond2File(index):
     temp_cond_content = ''
-    with open('files/ConditionFile.txt') as fileCond:
-        condition_file_content = fileCond.readlines()
-    condition_file_content = [x.strip() for x in condition_file_content]
+    # with open('files/ConditionFile.txt') as fileCond:
+    #     condition_file_content = fileCond.readlines()
+    # condition_file_content = [x.strip() for x in condition_file_content]
 
-    with open('files/DecSmt.smt2') as fileSmt:
-        smt_file_content = fileSmt.readlines()
+    condition_file_content = local_load('ConditionFile').splitlines()
+
+    # with open('files/DecSmt.txt') as fileSmt:
+    #     smt_file_content = fileSmt.readlines()
+
+    smt_file_content = local_load('DecSmt').splitlines()
 
     smt_file_content = [x.strip() for x in smt_file_content]
-    smt_file_lines = util.file_len('files/DecSmt.smt2')
-    fileCondSmt = open('files/ToggleBranchSmt.smt2', 'w')
+    # smt_file_lines = util.file_len('files/DecSmt.smt2')
+    # fileCondSmt = open('files/ToggleBranchSmt.smt2', 'w')
+    #
+    # for i in range(smt_file_lines):
+    #     fileCondSmt.write(smt_file_content[i])
+    #     fileCondSmt.write("\n")
+    # fileCondSmt.close()
+    #
+    local_save('\n'.join(smt_file_content), 'ToggleBranchSmt', force_rewrite=True)
 
-    for i in range(smt_file_lines):
-        fileCondSmt.write(smt_file_content[i])
-        fileCondSmt.write("\n")
-    fileCondSmt.close()
+    # with open('files/ToggleBranchSmt.smt2', 'r') as fileCondSmt:
+    #     text = fileCondSmt.read()
+    #     text = text.replace("(check-sat)", '')
+    #     text = text.replace("(get-model)", '')
+    #
+    #     with open('files/ToggleBranchSmt.smt2', 'w') as fileCondSmt:
+    #         fileCondSmt.write(text)
 
-    with open('files/ToggleBranchSmt.smt2', 'r') as fileCondSmt:
-        text = fileCondSmt.read()
-        text = text.replace("(check-sat)", '')
-        text = text.replace("(get-model)", '')
+    toggle_branch_smt = local_load('ToggleBranchSmt')
 
-        with open('files/ToggleBranchSmt.smt2', 'w') as fileCondSmt:
-            fileCondSmt.write(text)
+    toggle_branch_smt = toggle_branch_smt.replace("(check-sat)", '')
+    toggle_branch_smt = toggle_branch_smt.replace("(get-model)", '')
 
-    fileCondSmt = open('files/ToggleBranchSmt.smt2', 'a')
+    local_save(toggle_branch_smt, 'ToggleBranchSmt', force_rewrite=True)
+
+    # fileCondSmt = open('files/ToggleBranchSmt.smt2', 'a')
+
+    toggle_branch_smt = local_load('ToggleBranchSmt')
 
     temp_cond_content = condition_file_content[index]
 
-    fileCondSmt.write("(assert (not " + temp_cond_content + "))")
-    fileCondSmt.write("\n")
+    toggle_branch_smt += "(assert (not " + temp_cond_content + "))"
+    toggle_branch_smt += "\n"
 
-    fileCondSmt.write("(check-sat) \n")
-    fileCondSmt.write("(get-model) \n")
+    toggle_branch_smt += "(check-sat) \n"
+    toggle_branch_smt += "(get-model) \n"
 
-    fileCondSmt.close()
+    local_save(toggle_branch_smt, 'ToggleBranchSmt', force_rewrite=True)
+
+    # fileCondSmt.close()
 
 
 def funcWrite2File(file_name):
-    with open(file_name) as fileSmt:
-        smt_file_content = fileSmt.readlines()
+    # with open(file_name) as fileSmt:
+    #     smt_file_content = fileSmt.readlines()
+
+    smt_file_content = local_load(file_name).splitlines()
 
     smt_file_content = [x.strip() for x in smt_file_content]
 
-    smt_file_lines = util.file_len(file_name)
+    # smt_file_lines = util.file_len(file_name)
 
-    fileTogFeSmt = open('files/ToggleFeatureSmt.smt2', 'w')
+    # fileTogFeSmt = open('files/ToggleFeatureSmt.smt2', 'w')
+    #
+    # for i in range(smt_file_lines):
+    #     fileTogFeSmt.write(smt_file_content[i])
+    #     fileTogFeSmt.write("\n")
+    #
+    # fileTogFeSmt.close()
 
-    for i in range(smt_file_lines):
-        fileTogFeSmt.write(smt_file_content[i])
-        fileTogFeSmt.write("\n")
-
-    fileTogFeSmt.close()
+    local_save('\n'.join(smt_file_content), 'ToggleFeatureSmt', force_rewrite=True)
 
 
 def funcgetPath4multiLbl(tree, dfMain, noCex, no_param):
@@ -156,13 +177,15 @@ def funcgetPath(tree, dfMain, noCex):
         for i in tree_.feature
     ]
 
-    dfT = pd.read_csv('files/TestDataSMTMain.csv')
+    dfT = local_load('TestDataSMTMain')
 
     node = 0
     depth = 1
-    f1 = open('files/SampleFile.txt', 'w')
-    f1.write("(assert (=> (and ")
-    pathCondFile = open('files/ConditionFile.txt', 'w')
+    # f1 = open('files/SampleFile.txt', 'w')
+    sample_file = ""
+    sample_file += "(assert (=> (and "
+    # pathCondFile = open('files/ConditionFile.txt', 'w')
+    pathCondFile = ""
 
     while (True):
         name = feature_name[node]
@@ -173,36 +196,43 @@ def funcgetPath(tree, dfMain, noCex):
                 index = i
 
         if (tree_.feature[node] == _tree.TREE_UNDEFINED):
-            f1.write(") (= Class " + str(np.argmax(tree_.value[node][0])) + ")))")
+            sample_file += ") (= Class " + str(np.argmax(tree_.value[node][0])) + ")))"
             break
 
         index = int(index)
         # print(dfT.iloc[noCex][index])
         if (dfT.iloc[noCex][index] <= threshold):
+            if noCex > 1:
+                print('dddd')
             node = tree_.children_left[node]
             depth = depth + 1
             threshold = getDataType(threshold, dfMain, index)
-            f1.write("(<= " + str(name) + str(noCex) + " " + str(threshold) + ") ")
-            pathCondFile.write("(<= " + str(name) + str(noCex) + " " + str(threshold) + ") ")
-            pathCondFile.write("\n")
+            sample_file += "(<= " + str(name) + str(noCex) + " " + str(threshold) + ") "
+            pathCondFile += "(<= " + str(name) + str(noCex) + " " + str(threshold) + ") "
+            pathCondFile += "\n"
         else:
             node = tree_.children_right[node]
             depth = depth + 1
             threshold = getDataType(threshold, dfMain, index)
-            f1.write("(> " + str(name) + str(noCex) + " " + str(threshold) + ") ")
-            pathCondFile.write("(> " + str(name) + str(noCex) + " " + str(threshold) + ") ")
-            pathCondFile.write("\n")
+            sample_file += "(> " + str(name) + str(noCex) + " " + str(threshold) + ") "
+            pathCondFile += "(> " + str(name) + str(noCex) + " " + str(threshold) + ") "
+            pathCondFile += "\n"
 
-    f1.close()
-    pathCondFile.close()
+    local_save(sample_file, 'SampleFile', force_rewrite=True)
+    local_save(pathCondFile, 'ConditionFile', force_rewrite=True)
+
+    # f1.close()
+    # pathCondFile.close()
 
 
 def funcPrunInst(dfOrig, dnn_flag):
     # data set to hold set of candidate counter examples, refer to cand-set of prunInst algorithm
-    with open('files/CandidateSetInst.csv', 'w', newline='') as csvfile:
-        fieldnames = dfOrig.columns.values
-        writer = cv.writer(csvfile)
-        writer.writerow(fieldnames)
+    # with open('files/CandidateSetInst.csv', 'w', newline='') as csvfile:
+    #     fieldnames = dfOrig.columns.values
+    #     writer = cv.writer(csvfile)
+    #     writer.writerow(fieldnames)
+
+    local_save(pd.DataFrame(columns=dfOrig.columns), 'CandidateSetInst')
 
     paramDict = local_load('param_dict')
 
@@ -212,7 +242,7 @@ def funcPrunInst(dfOrig, dnn_flag):
         noClass = 1
 
     # Getting the counter example pair (x, x') and saving it to a permanent storage
-    dfRead = pd.read_csv('files/TestDataSMTMain.csv')
+    dfRead = local_load('TestDataSMTMain')
     dataRead = dfRead.values
 
     # Combining loop in line 2 & 6 in a single loop
@@ -222,16 +252,22 @@ def funcPrunInst(dfOrig, dnn_flag):
             if (dnn_flag == True):
                 funcWrite2File('DNNSmt.smt2')
             else:
-                funcWrite2File('files/DecSmt.smt2')
+                funcWrite2File('DecSmt')
 
-            with open('files/ToggleFeatureSmt.smt2', 'r') as file:
-                text = file.read()
-                text = text.replace("(check-sat)", '')
-                text = text.replace("(get-model)", '')
-                with open('files/ToggleFeatureSmt.smt2', 'w') as file:
-                    file.write(text)
+            toggle_feature_smt = local_load('ToggleFeatureSmt')
 
-            fileTogFe = open('files/ToggleFeatureSmt.smt2', 'a')
+            # with open('files/ToggleFeatureSmt.smt2', 'r') as file:
+            #     text = file.read()
+            #     text = text.replace("(check-sat)", '')
+            #     text = text.replace("(get-model)", '')
+            #     with open('files/ToggleFeatureSmt.smt2', 'w') as file:
+            #         file.write(text)
+
+            toggle_feature_smt = toggle_feature_smt.replace("(check-sat)", '')
+            toggle_feature_smt = toggle_feature_smt.replace("(get-model)", '')
+            # local_save(toggle_feature_smt, 'ToggleFeatureSmt')
+
+            # fileTogFe = open('files/ToggleFeatureSmt.smt2', 'a')
             name = str(dfRead.columns.values[i])
 
             data_type = str(dfOrig.dtypes[i])
@@ -246,61 +282,67 @@ def funcPrunInst(dfOrig, dnn_flag):
                 digit = dig[0]
             if ((int(paramDict['no_of_params']) == 1) and (paramDict['multi_label']) and (
                     paramDict['white_box_model'] == 'Decision tree')):
-                fileTogFe.write("(assert (not (= " + name + " " + digit + "))) \n")
+                toggle_feature_smt += "(assert (not (= " + name + " " + digit + "))) \n"
             else:
-                fileTogFe.write("(assert (not (= " + name + str(j) + " " + digit + "))) \n")
-            fileTogFe.write("(check-sat) \n")
-            fileTogFe.write("(get-model) \n")
-            fileTogFe.close()
+                toggle_feature_smt += "(assert (not (= " + name + str(j) + " " + digit + "))) \n"
+            toggle_feature_smt += "(check-sat) \n"
+            toggle_feature_smt += "(get-model) \n"
+            # fileTogFe.close()
 
-            os.system(r"z3 files/ToggleFeatureSmt.smt2 > files/FinalOutput.txt")
+            os.system(r"z3 files/ToggleFeatureSmt.txt > files/FinalOutput.txt")
 
             satFlag = ReadZ3Output.funcConvZ3OutToData(dfOrig)
 
             # If sat then add the counter example to the candidate set, refer line 8,9 in prunInst algorithm
             if (satFlag == True):
-                dfSmt = pd.read_csv('files/TestDataSMT.csv')
-                dataAppend = dfSmt.values
-                with open('files/CandidateSetInst.csv', 'a', newline='') as csvfile:
-                    writer = cv.writer(csvfile)
-                    writer.writerows(dataAppend)
+                dfSmt = local_load('TestDataSMT')
+                local_save(dfSmt, 'CandidateSetInst')
+                # dataAppend = dfSmt.values
+                # with open('files/CandidateSetInst.csv', 'a', newline='') as csvfile:
+                #     writer = cv.writer(csvfile)
+                #     writer.writerows(dataAppend)
 
 
 def funcPrunBranch(dfOrig, tree_model):
     noPathCond = 0
     # data set to hold set of candidate counter examples, refer to cand-set of prunBranch algorithm
-    with open('files/CandidateSetBranch.csv', 'w', newline='') as csvfile:
-        fieldnames = dfOrig.columns.values
-        writer = cv.writer(csvfile)
-        writer.writerow(fieldnames)
-
+    local_save(pd.DataFrame(columns=dfOrig.columns.values), 'CandidateSetBranch', force_rewrite=True)
+    # with open('files/CandidateSetBranch.csv', 'w', newline='') as csvfile:
+    #     fieldnames = dfOrig.columns.values
+    #     writer = cv.writer(csvfile)
+    #     writer.writerow(fieldnames)
 
     paramDict = local_load('param_dict')
 
-    dfRead = pd.read_csv('files/TestDataSMTMain.csv')
+    dfRead = local_load('TestDataSMTMain')
+    # dfRead = pd.read_csv('files/TestDataSMTMain.csv')
 
     for row in range(0, dfRead.shape[0]):
         if (paramDict['multi_label']):
             funcgetPath4multiLbl(tree_model, dfOrig, row, int(paramDict['no_of_params']))
         else:
             funcgetPath(tree_model, dfOrig, row)
-        fileCond = open('files/TreeOutput.txt', 'r')
-        first = fileCond.read(1)
+        # fileCond = open('files/TreeOutput.txt', 'r')
+        fileCond = local_load('TreeOutput')
+        # first = fileCond.read(1)
 
-        if not first:
-            print('No Branch')
-        else:
-            noPathCond = util.file_len('files/ConditionFile.txt')
-            if (noPathCond == 'empty'):
-                return
-            for i in range(noPathCond):
-                funcAddCond2File(i)
-                os.system(r"z3 files/ToggleBranchSmt.smt2 > files/FinalOutput.txt")
-                satFlag = ReadZ3Output.funcConvZ3OutToData(dfOrig)
+        # if not first:
+        #     print('No Branch')
+        # else:
+        condition_file = local_load('ConditionFile')
+        noPathCond = util.file_len('files/ConditionFile.txt')
+        if not condition_file:
+            return
+        for i in range(noPathCond):
+            funcAddCond2File(i)
+            os.system(r"z3 files/ToggleBranchSmt.txt > files/FinalOutput.txt")
+            satFlag = ReadZ3Output.funcConvZ3OutToData(dfOrig)
 
-                if (satFlag == True):
-                    dfSmt = pd.read_csv('files/TestDataSMT.csv')
-                    dataAppend = dfSmt.values
-                    with open('files/CandidateSetBranch.csv', 'a', newline='') as csvfile:
-                        writer = cv.writer(csvfile)
-                        writer.writerows(dataAppend)
+            if (satFlag == True):
+                # dfSmt = pd.read_csv('files/TestDataSMT.csv')
+                dfSmt = local_load('TestDataSMT')
+                # dataAppend = dfSmt.values
+                # with open('files/CandidateSetBranch.csv', 'a', newline='') as csvfile:
+                #     writer = cv.writer(csvfile)
+                #     writer.writerows(dataAppend)
+                local_save(dfSmt, 'CandidateSetBranch')

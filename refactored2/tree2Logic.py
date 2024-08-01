@@ -68,7 +68,7 @@ def file_len(fname):
 
 
 def funcConvBranch(single_branch, dfT, rep):
-    f = open('files/DecSmt.smt2', 'a')
+    f = open('files/DecSmt.txt', 'a')
     f.write("(assert (=> (and ")
     for i in range(0, len(single_branch)):
         temp_Str = single_branch[i]
@@ -154,7 +154,7 @@ def funcGenBranch(dfT, rep):
 
     if ('return' in file_content[1]):
         digit = int(re.search(r'\d+', file_content[1]).group(0))
-        f = open('files/DecSmt.smt2', 'a')
+        f = open('files/DecSmt.txt', 'a')
         f.write("(assert (= Class" + str(rep) + " " + str(digit) + "))")
         f.write("\n")
         f.close()
@@ -175,11 +175,8 @@ def funcConv(dfT, no_of_instances):
     #     feName_type = dict(reader)
 
     feName_type = local_load('feNameType')
-
-    with open('files/TreeOutput.txt') as f1:
-        content = f1.readlines()
-
-    f = open('files/DecSmt.smt2', 'w')
+    
+    f = open('files/DecSmt.txt', 'w')
     for j in range(0, no_of_instances):
         for i in range(0, dfT.columns.values.shape[0] - 1):
             tempStr = dfT.columns.values[i]
@@ -188,9 +185,6 @@ def funcConv(dfT, no_of_instances):
             fe_type = str(fe_type)
             '''
             fe_type = feName_type[tempStr]
-
-            min_val = dfT.iloc[:, i].min()
-            max_val = dfT.iloc[:, i].max()
 
             if ('int' in fe_type):
                 f.write("(declare-fun " + tempStr + str(j) + " () Int)")
@@ -217,7 +211,7 @@ def funcConv(dfT, no_of_instances):
 
     # Calling function to get the branch and convert it to z3 form,  creating alias
     for i in range(0, no_of_instances):
-        f = open('files/DecSmt.smt2', 'a')
+        f = open('files/DecSmt.txt', 'a')
         f.write('\n;-----------' + str(i) + '-----------number instance-------------- \n')
         f.close()
         funcGenBranch(dfT, i)

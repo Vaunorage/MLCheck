@@ -5,81 +5,54 @@ from refactored2 import util
 import os
 import re
 
-from refactored2.util import local_load
+from refactored2.util import local_load, local_save
+
+
+def convert_z3_output_to_df(file_content, df, paramDict):
+
+    # Regex pattern to match the define-fun declarations
+    pattern = r'\(define-fun\s+(\w+?)(\d)\s+\(\)\s+(\w+)\s*\n\s*(\d+)\)'
+
+    # Find all matches
+    matches = re.findall(pattern, file_content)
+
+    # Initialize an empty DataFrame to store results
+    no_of_params = int(paramDict['no_of_params'])
+    dfAgain = pd.DataFrame(np.zeros((no_of_params, df.shape[1])), columns=df.columns.values)
+
+    # Process each match
+    for feature_name, param_no, data_type, value in matches:
+
+        param_no = int(param_no)
+        value = int(value)  # assuming the value is always an integer here
+
+        # Assign the value to the correct cell in the DataFrame
+        if feature_name in df.columns:
+            dfAgain.loc[param_no, feature_name] = value
+
+    return dfAgain
 
 
 def funcConvZ3OutToData(df):
     paramDict = local_load('param_dict')
-    no_of_params = int(paramDict['no_of_params'])
-    testMatrix = np.zeros(((no_of_params), df.shape[1]))
+    # testMatrix = np.zeros(((no_of_params), df.shape[1]))
 
-    if (os.stat('files/FinalOutput.txt').st_size > 0):
-        with open('files/FinalOutput.txt') as f1:
-            file_content = f1.readlines()
+    # if (os.stat('files/FinalOutput.txt').st_size > 0):
+    #     with open('files/FinalOutput.txt') as f1:
 
-        file_content = [x.strip() for x in file_content]
-        noOfLines = util.file_len('files/FinalOutput.txt')
+    file_content = local_load('FinalOutput')
 
-        with open('files/TestDataSMT.csv', 'w', newline='') as csvfile:
-            fieldnames = df.columns.values
-            writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)
-            writer.writerows(testMatrix)
+    if ('unknown' in file_content[0]):
+        raise Exception('Encoding problem')
+    if ('model is not available' in file_content[1]):
+        return False
 
-        dfAgain = pd.read_csv('files/TestDataSMT.csv')
-        if ('unknown' in file_content[0]):
-            raise Exception('Encoding problem')
-        if ('model is not available' in file_content[1]):
-            return False
-        else:
-            i = 1
-            while (i < noOfLines):
-                minus_flag = False
-                fe_flag = False
-                if ("(model" == file_content[i]):
-                    i = i + 1
-                elif (")" == file_content[i]):
-                    i = i + 1
-                else:
-                    for j in range(0, df.columns.values.shape[0]):
-                        for param_no in range(0, no_of_params):
-                            if (paramDict['multi_label'] and no_of_params == 1 and paramDict[
-                                'white_box_model'] == 'Decision tree'):
-                                fe_add = ' '
-                            else:
-                                fe_add = str(param_no)
-                            if (df.columns.values[j] + fe_add in file_content[i]):
-                                feature_name = df.columns.values[j]
-                                fe_flag = True
-                                if ('Int' in file_content[i]):
-                                    i = i + 1
-                                    digit = int(re.search(r'\d+', file_content[i]).group(0))
-                                    if ('-' in file_content[i]):
-                                        digit = 0 - digit
-                                elif ('Real' in file_content[i]):
-                                    i = i + 1
-                                    if ("(/" in file_content[i]):
-                                        if ('-' in file_content[i]):
-                                            minus_flag = True
-                                        multi_digits = re.findall('\d*?\.\d+', file_content[i])
-                                        if (len(multi_digits) == 1):
-                                            i = i + 1
-                                            multi_digits.append(float(re.search(r'\d+', file_content[i]).group(0)))
-                                        digit = float(multi_digits[0]) / float(multi_digits[1])
-                                        if (minus_flag == True):
-                                            digit = 0 - digit
-                                    else:
-                                        # digit = round(float(re.search(r'\d+', file_content[i]).group(0)), 2)
-                                        digit = float(re.search(r'\d+', file_content[i]).group(0))
-                                        if ('-' in file_content[i]):
-                                            digit = 0 - digit
-                                dfAgain.loc[param_no, feature_name] = digit
-                                i = i + 1
-                    if (fe_flag == False):
-                        i = i + 2
-            dfAgain.to_csv('files/TestDataSMT.csv', index=False, header=True)
-            return True
+    # Create DataFrame from the data dictionary
+    dfAgain = convert_z3_output_to_df(file_content, df, paramDict)
 
-    else:
-        raise Exception("There is no solver installed in your system")
+    # dfAgain.to_csv('files/TestDataSMT.csv', index=False, header=True)
+    local_save(dfAgain, 'TestDataSMT', force_rewrite=True)
+    return True
 
+    # else:
+    #     raise Exception("There is no solver installed in your system")

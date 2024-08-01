@@ -1,9 +1,23 @@
+from paths import HERE
 from refactored2.mlCheck import Assume, Assert, propCheck
 import pandas as pd
 import statistics as st
 import math
 
+from refactored2.util import local_delete
+
 iteration_no = 1
+
+
+def delete_all():
+    files = ['assumeStmnt', 'assertStmnt', 'Cand-Set', 'CandidateSet',
+             'CandidateSetInst', 'CandidateSetBranch', 'TestDataSMT',
+             'TestDataSMTMain', 'DecSmt', 'ToggleBranchSmt',
+             'ToggleFeatureSmt', 'TreeOutput', 'SampleFile', 'FinalOutput',
+             'MUTWeight', 'ConditionFile', 'MUTWeight', 'MUTWeight', 'DNNSmt',
+             'TestData', 'TestDataSet', 'CandTestDataSet']
+    for ff in files:
+        local_delete(ff)
 
 
 def func_calculate_sem(samples):
@@ -11,19 +25,21 @@ def func_calculate_sem(samples):
     return standard_dev / math.sqrt(len(samples))
 
 
+delete_all()
+
 model_path_list_adult = ['FairUnAwareTestCases/NBAdult.joblib']
 
 model_path_list_credit = ['FairUnAwareTestCases/NBCredit.joblib']
 
 white_box_list = ['Decision tree']
 
-f = open('Output/fairnessResults.txt', 'w')
+f = open('Output/fairnessResults', 'w')
 
-file_data = open('files/dataset.txt', 'w')
-file_data.write('Datasets/Adult.csv')
+file_data = open('dataset', 'w')
+file_data.write('Datasets/Adult')
 file_data.close()
 
-fil = open('files/datasetFile.txt', 'w')
+fil = open('datasetFile', 'w')
 fil.write('census')
 fil.close()
 
@@ -39,8 +55,8 @@ for model_path in model_path_list_adult:
         for no in range(0, iteration_no):
             propCheck(no_of_params=2, max_samples=1500, model_type='sklearn', model_path=model_path, mul_cex=True,
                       train_data_available=True, train_ratio=30, no_of_train=1000,
-                      train_data_loc='Datasets/Adult.csv', white_box_model=white_box, no_of_layers=2, layer_size=10,
-                      no_of_class=2)
+                      train_data_loc=HERE.joinpath('refactored2/Datasets/Adult.csv').as_posix(), white_box_model=white_box, no_of_layers=2,
+                      layer_size=10, no_of_class=2)
 
             for i in range(0, 13):
                 if i == 8:
@@ -48,7 +64,7 @@ for model_path in model_path_list_adult:
                 else:
                     Assume('x[i] = y[i]', i)
             Assert('model.predict(x) == model.predict(y)')
-            dfCexSet = pd.read_csv('files/CexSet.csv')
+            dfCexSet = pd.read_csv('CexSet')
             cex_count = cex_count + round(dfCexSet.shape[0] / 2)
             cex_count_list.append(round(dfCexSet.shape[0] / 2))
         mean_cex_count = cex_count / iteration_no

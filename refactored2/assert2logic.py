@@ -1,6 +1,5 @@
 from parsimonious.nodes import NodeVisitor
-import csv as cv
-import re, sys
+import re
 import pandas as pd
 
 from refactored2.util import local_save, local_load

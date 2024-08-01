@@ -3,44 +3,52 @@ import csv as cv
 from refactored2 import Pruning
 import numpy as np
 
+from refactored2.util import local_load, local_save
+
 
 def funcAddCex2CandidateSet():
-    df = pd.read_csv('files/TestDataSMT.csv')
-    data = df.values
-    with open('files/CandidateSet.csv', 'w', newline='') as csvfile:
-        fieldnames = df.columns.values  
-        writer = cv.writer(csvfile)
-        writer.writerow(fieldnames)
-        writer.writerows(data)
+    df = local_load('TestDataSMT')
+    # data = df.values
+    local_save(df, 'CandidateSet', force_rewrite=True)
+    # with open('files/CandidateSet.csv', 'w', newline='') as csvfile:
+    #     fieldnames = df.columns.values
+    #     writer = cv.writer(csvfile)
+    #     writer.writerow(fieldnames)
+    #     writer.writerows(data)
         
         
 def funcAddCexPruneCandidateSet(tree_model):
-    df = pd.read_csv('files/TestDataSMT.csv')
-    data = df.values
+    df = local_load('TestDataSMT')
+    # data = df.values
     
-    with open('files/TestDataSMTMain.csv', 'w', newline='') as csvfile:
-        fieldnames = df.columns.values  
-        writer = cv.writer(csvfile)
-        writer.writerow(fieldnames)
-        writer.writerows(data)
+    # with open('TestDataSMTMain', 'w', newline='') as csvfile:
+    #     fieldnames = df.columns.values
+    #     writer = cv.writer(csvfile)
+    #     writer.writerow(fieldnames)
+    #     writer.writerows(data)
+    local_save(df, 'TestDataSMTMain', force_rewrite=True)
     
-    df = pd.read_csv('files/OracleData.csv')
+    df = local_load('OracleData')
     #Pruning by negating the data instance
     Pruning.funcPrunInst(df, False)
-    dfInst = pd.read_csv('files/CandidateSetInst.csv')
-    dataInst = dfInst.values
-    with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
-        writer = cv.writer(csvfile)
-        writer.writerows(dataInst)
+    dfInst = local_load('CandidateSetInst')
+    # dataInst = dfInst.values
+
+    # with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
+    #     writer = cv.writer(csvfile)
+    #     writer.writerows(dataInst)
+
+    local_save(dfInst, 'CandidateSet')
     
       
     #Pruning by toggling the branch conditions
     Pruning.funcPrunBranch(df, tree_model)
-    dfBranch = pd.read_csv('files/CandidateSetBranch.csv')
-    dataBranch = dfBranch.values    
-    with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
-        writer = cv.writer(csvfile)
-        writer.writerows(dataBranch)  
+    dfBranch = local_load('CandidateSetBranch')
+    # dataBranch = dfBranch.values
+    # with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
+    #     writer = cv.writer(csvfile)
+    #     writer.writerows(dataBranch)
+    local_save(dfBranch, 'CandidateSet')
 
 
 def funcCheckDuplicate(pairfirst, pairsecond, testMatrix):
