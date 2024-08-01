@@ -11,6 +11,18 @@ from paths import HERE
 files_folder = HERE.joinpath(f"refactored2/files")
 
 
+def get_file_path(var_name, return_hypothetical=False, default_ext=None):
+    for ext in ['.csv', '.json', '.pkl', '.txt']:
+        var_path = files_folder.joinpath(f"{var_name}{ext}")
+        if var_path.exists():
+            return var_path
+
+    # Return the hypothetical path if no file exists and return_hypothetical is True
+    if return_hypothetical:
+        return files_folder.joinpath(f"{var_name}{default_ext}")  # Placeholder for extension
+    return None
+
+
 def file_exists(var_name):
     for ext in ['.csv', '.json', '.pkl', '.txt']:
         var_path = files_folder.joinpath(f"{var_name}{ext}")
@@ -114,13 +126,14 @@ def convDataInst(X, df, j, no_of_class):
 
 
 def funcAdd2Oracle(data):
-    with open('files/TestingData.csv', 'a', newline='') as csvfile:
-        writer = cv.writer(csvfile)
-        writer.writerows(data)
+    # with open('files/TestingData.csv', 'a', newline='') as csvfile:
+    #     writer = cv.writer(csvfile)
+    #     writer.writerows(data)
+    local_save(data, 'TestingData')
 
 
 def funcCreateOracle(no_of_class, multi_label, model):
-    df = pd.read_csv('files/TestingData.csv')
+    df = local_load('TestingData')
     data = df.values
     if multi_label:
         X = data[:, :-1]
@@ -135,15 +148,8 @@ def funcCreateOracle(no_of_class, multi_label, model):
             className = str(df.columns.values[index + i])
             for j in range(0, X.shape[0]):
                 df.loc[j, className] = predict_class[j][i]
-    df.to_csv('files/OracleData.csv', index=False, header=True)
-
-
-def addContent(file_name, f_content):
-    f1 = open(file_name, 'a')
-    for x in f_content:
-        f1.write('\n')
-        f1.write(x)
-    f1.close()
+    # df.to_csv('files/OracleData.csv', index=False, header=True)
+    local_save(df, 'OracleData', force_rewrite=True)
 
 
 def addSatOpt(file_name):

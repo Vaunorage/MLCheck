@@ -14,7 +14,7 @@ from joblib import dump, load
 from refactored2 import multiLabelMain
 import time
 
-from refactored2.util import local_save, local_load, file_exists
+from refactored2.util import local_save, local_load, file_exists, get_file_path
 
 
 class generateData:
@@ -416,14 +416,16 @@ class runChecker:
             tree2Logic.functree2LogicMain(tree, self.no_of_params)
             util.storeAssumeAssert('DecSmt')
             util.addSatOpt('DecSmt')
-            os.system(r"z3 files/DecSmt.txt > files/FinalOutput.txt")
+            os.system(
+                f"z3 {get_file_path('DecSmt').as_posix()} > {get_file_path('FinalOutput', return_hypothetical=True, default_ext='.txt').as_posix()}")
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
                 if count == 0:
                     print('No CEX is found by the checker at the first trial')
                     return 0
                 elif (count != 0) and (self.mul_cex):
-                    dfCexSet = pd.read_csv('files/CexSet.csv')
+                    # dfCexSet = pd.read_csv('files/CexSet.csv')
+                    dfCexSet = local_load('CexSet')
                     if round(dfCexSet.shape[0] / self.no_of_params) == 0:
                         print('No CEX is found')
                         return 0
@@ -438,12 +440,12 @@ class runChecker:
                 processCandCex.funcAddCexPruneCandidateSet(tree)
                 processCandCex.funcCheckCex()
                 # Increase the count if no further candidate cex has been found
-                dfCand = pd.read_csv('files/Cand-Set.csv')
+                dfCand = local_load('Cand-Set')
                 if round(dfCand.shape[0] / self.no_of_params) == 0:
                     count_cand_zero += 1
                     if count_cand_zero == MAX_CAND_ZERO:
                         if self.mul_cex:
-                            dfCexSet = pd.read_csv('files/CexSet.csv')
+                            dfCexSet = local_load('CexSet')
                             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                             if round(dfCexSet.shape[0] / self.no_of_params) > 0:
                                 self.addModelPred()
@@ -477,14 +479,16 @@ class runChecker:
                             testIndx += 1
                     if temp_count == self.no_of_params:
                         if self.mul_cex:
-                            with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                                writer = cv.writer(csvfile)
-                                writer.writerows(temp_store)
+                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
+                            #     writer = cv.writer(csvfile)
+                            #     writer.writerows(temp_store)
+                            local_save(temp_store, 'CexSet')
                         else:
                             print('A counter example is found, check it in files/CexSet.csv file: ', temp_store)
-                            with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                                writer = cv.writer(csvfile)
-                                writer.writerows(temp_store)
+                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
+                            #     writer = cv.writer(csvfile)
+                            #     writer.writerows(temp_store)
+                            local_save(temp_store, 'CexSet')
                             self.addModelPred()
                             return 1
                     else:

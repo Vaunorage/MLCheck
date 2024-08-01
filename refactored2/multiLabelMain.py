@@ -321,20 +321,22 @@ class multiLabelPropCheck:
 
 class runChecker:
     def __init__(self):
-        self.df = pd.read_csv('files/OracleData.csv')
+        self.df = local_load('OracleData')
         self.paramDict = local_load('param_dict')
         if 'model_path' in self.paramDict:
             self.model = load(self.paramDict['model_path'])
         else:
             self.model = load('Model/MUT.joblib')
-        with open('files/TestSet.csv', 'w', newline='') as csvfile:
-            fieldnames = self.df.columns.values
-            writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)
-        with open('files/CexSet.csv', 'w', newline='') as csvfile:
-            fieldnames = self.df.columns.values
-            writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)
+        # with open('files/TestSet.csv', 'w', newline='') as csvfile:
+        #     fieldnames = self.df.columns.values
+        #     writer = cv.writer(csvfile)
+        #     writer.writerow(fieldnames)
+        local_save(self.df, 'TestSet', force_rewrite=True)
+        # with open('files/CexSet.csv', 'w', newline='') as csvfile:
+        #     fieldnames = self.df.columns.values
+        #     writer = cv.writer(csvfile)
+        #     writer.writerow(fieldnames)
+        local_save(self.df, 'CexSet', force_rewrite=True)
         self.max_samples = int(self.paramDict['max_samples'])
         self.no_of_params = int(self.paramDict['no_of_params'])
         self.mul_cex = self.paramDict['mul_cex_opt']
@@ -343,74 +345,10 @@ class runChecker:
         self.no_of_class = int(self.paramDict['no_of_class'])
 
     def get_index(self, name):
-        df = pd.read_csv('files/OracleData.csv')
+        df = local_load('OracleData')
         for i in range(0, df.shape[1] - 1):
             if name == df.columns.values[i]:
                 return i
-
-    def checkWithOracle(self):
-        df = pd.read_csv('files/OracleData.csv')
-        data_oracle = self.df.values
-        data_oracle = data_oracle[:, :-self.no_of_class]
-        classNameList = []
-        indices = []
-        flag_act_per = False
-        flag_act_obj = False
-        flag_per_obj = False
-        index = self.df.shape[1] - self.no_of_class
-        for i in range(0, self.no_of_class):
-            classNameList.append(str(self.df.columns.values[index + i]))
-        with open('files/assertStmnt.txt') as f1:
-            file_content = f1.readlines()
-        statement = [x.strip() for x in file_content]
-
-        for name in classNameList:
-            for st in statement:
-                if name in st:
-                    indices.append(self.get_index(name))
-
-        pred_arr = self.model.predict(data_oracle)
-        for i in range(0, 2):
-            if (indices[0] == 50) & (indices[1] == 51):
-                flag_act_per = True
-            elif (indices[0] == 51) & (indices[1] == 52):
-                flag_act_obj = True
-            elif (indices[0] == 50) & (indices[1] == 52):
-                flag_per_obj = True
-        if flag_act_per:
-            for i in range(0, len(pred_arr)):
-                if ((pred_arr[i][1] == 1) & (pred_arr[i][0] == 0)):
-                    print('A CEX is found')
-                    print(data_oracle[i])
-                    with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                        writer = cv.writer(csvfile)
-                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1] - self.no_of_class)))
-                    return True
-                else:
-                    return False
-        elif flag_per_obj:
-            for i in range(0, len(pred_arr)):
-                if ((pred_arr[i][0] == 1) & (pred_arr[i][2] == 1)):
-                    print('A CEX is found')
-                    print(data_oracle[i])
-                    with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                        writer = cv.writer(csvfile)
-                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1] - self.no_of_class)))
-                    return True
-                else:
-                    return False
-        elif flag_act_obj:
-            for i in range(0, len(pred_arr)):
-                if ((pred_arr[i][1] == 1) & (pred_arr[i][2] == 1)):
-                    print('A CEX is found')
-                    print(data_oracle[i])
-                    with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                        writer = cv.writer(csvfile)
-                        writer.writerows(np.reshape(data_oracle[i], (1, df.shape[1] - self.no_of_class)))
-                    return True
-                else:
-                    return False
-        return False
 
     def funcPrediction(self, X, dfCand, testIndx, y):
         pred_arr = self.model.predict(util.convDataInst(X, dfCand, testIndx, self.no_of_class))
@@ -422,7 +360,7 @@ class runChecker:
         return True
 
     def addModelPred(self):
-        dfCexSet = pd.read_csv('files/CexSet.csv')
+        dfCexSet = local_load('CexSet')
         dataCex = dfCexSet.values
         X = dataCex[:, :-self.no_of_class]
         predict_class = self.model.predict(X)
@@ -431,7 +369,8 @@ class runChecker:
             className = str(self.df.columns.values[index + i])
             for j in range(0, X.shape[0]):
                 dfCexSet.loc[j, className] = predict_class[j][i]
-        dfCexSet.to_csv('files/CexSet.csv', index=False, header=True)
+        # dfCexSet.to_csv('files/CexSet.csv', index=False, header=True)
+        local_save(dfCexSet, 'CexSet', force_rewrite=True)
 
     def runPropCheck(self):
         retrain_flag = False
@@ -447,8 +386,8 @@ class runChecker:
             tree = trainDecTree.functrainDecTree(self.no_of_class)
 
             tree2Logic.functree2LogicMain(tree, self.no_of_params)
-            util.storeAssumeAssert('files/DecSmt.txt')
-            util.addSatOpt('files/DecSmt.txt')
+            util.storeAssumeAssert('DecSmt')
+            util.addSatOpt('DecSmt')
             os.system(r"z3 files/DecSmt.txt > files/FinalOutput.txt")
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
@@ -472,12 +411,12 @@ class runChecker:
                 processCandCex.funcAddCexPruneCandidateSet(tree)
                 processCandCex.funcCheckCex()
                 # Increase the count if no further candidate cex has been found
-                dfCand = pd.read_csv('files/Cand-Set.csv')
+                dfCand = local_load('Cand-Set')
                 if round(dfCand.shape[0] / self.no_of_params) == 0:
                     count_cand_zero += 1
                     if count_cand_zero == MAX_CAND_ZERO:
                         if self.mul_cex:
-                            dfCexSet = pd.read_csv('files/CexSet.csv')
+                            dfCexSet = local_load('CexSet')
                             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
                             if round(dfCexSet.shape[0] / self.no_of_params) > 0:
                                 self.addModelPred()
@@ -512,14 +451,16 @@ class runChecker:
                             testIndx += 1
                     if temp_count == self.no_of_params:
                         if self.mul_cex:
-                            with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                                writer = cv.writer(csvfile)
-                                writer.writerows(temp_store)
+                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
+                            #     writer = cv.writer(csvfile)
+                            #     writer.writerows(temp_store)
+                            local_save(pd.DataFrame(temp_store), 'CexSet')
                         else:
                             print('A counter example is found, check it in files/CexSet.csv file: ', temp_store)
-                            with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                                writer = cv.writer(csvfile)
-                                writer.writerows(temp_store)
+                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
+                            #     writer = cv.writer(csvfile)
+                            #     writer.writerows(temp_store)
+                            local_save(pd.DataFrame(temp_store), 'CexSet')
                             self.addModelPred()
                             return 1
                     else:
@@ -531,7 +472,7 @@ class runChecker:
                     print("Time out")
                     break
 
-            dfCexSet = pd.read_csv('files/CexSet.csv')
+            dfCexSet = local_load('CexSet')
             if (round(dfCexSet.shape[0] / self.no_of_params) > 0) and (count >= self.max_samples):
                 self.addModelPred()
                 print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
