@@ -11,6 +11,14 @@ from paths import HERE
 files_folder = HERE.joinpath(f"refactored2/files")
 
 
+def file_exists(var_name):
+    for ext in ['.csv', '.json', '.pkl', '.txt']:
+        var_path = files_folder.joinpath(f"{var_name}{ext}")
+        if var_path.exists():
+            return True
+    return False
+
+
 def local_delete(var_name):
     deleted_files = []
     for ext in ['.csv', '.json', '.pkl', '.txt']:

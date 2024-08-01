@@ -14,7 +14,7 @@ from joblib import dump, load
 from refactored2 import multiLabelMain
 import time
 
-from refactored2.util import local_save, local_load
+from refactored2.util import local_save, local_load, file_exists
 
 
 class generateData:
@@ -43,8 +43,8 @@ class generateData:
     # Function to generate a new sample
     def funcGenData(self):
         tempData = np.zeros((1, len(self.nameArr)), dtype=object)
-        f = open('files/MUTWeight.txt', 'r')
-        weight_content = f.readline()
+        # f = open('files/MUTWeight.txt', 'r')
+        weight_content = local_load('MUTWeight')
 
         for k in range(0, len(self.nameArr)):
             fe_type = self.typeArr[k]
@@ -84,10 +84,12 @@ class generateData:
                     testMatrix[i][j] = temp[0][j]
                 i = i + 1
 
-        with open('files/TestingData.csv', 'w', newline='') as csvfile:
-            writer = cv.writer(csvfile)
-            writer.writerow(self.nameArr)
-            writer.writerows(testMatrix)
+        local_save(pd.DataFrame(testMatrix, columns=self.nameArr), 'TestingData', force_rewrite=True)
+
+        # with open('files/TestingData.csv', 'w', newline='') as csvfile:
+        #     writer = cv.writer(csvfile)
+        #     writer.writerow(self.nameArr)
+        #     writer.writerows(testMatrix)
 
         if self.paramDict['train_data_available']:
             dfTrainData = pd.read_csv(self.paramDict['train_data_loc'])
@@ -112,9 +114,11 @@ class generateData:
                 ratioTrack.append(ratio)
                 testMatrix[testCount] = data[ratio]
                 testCount = testCount + 1
-        with open('files/TestingData.csv', 'a', newline='') as csvfile:
-            writer = cv.writer(csvfile)
-            writer.writerows(testMatrix)
+
+        local_save(pd.DataFrame(testMatrix), 'TestingData')
+        # with open('files/TestingData.csv', 'a', newline='') as csvfile:
+        #     writer = cv.writer(csvfile)
+        #     writer.writerows(testMatrix)
 
 
 class dataFrameCreate(NodeVisitor):
@@ -149,7 +153,7 @@ class makeOracleData:
         self.paramDict = local_load('param_dict')
 
     def funcGenOracle(self):
-        dfTest = pd.read_csv('files/TestingData.csv')
+        dfTest = local_load('TestingData')
         dataTest = dfTest.values
         predict_list = np.zeros((1, dfTest.shape[0]))
         X = dataTest[:, :-1]
@@ -160,19 +164,10 @@ class makeOracleData:
                 dfTest.loc[i, 'Class'] = int(predict_list[0][i])
 
         else:
-            if self.paramDict['model_type'] == 'Pytorch':
-                X = torch.tensor(X, dtype=torch.float32)
-                predict_class = []
-                for i in range(0, X.shape[0]):
-                    predict_prob = self.model(X[i].view(-1, X.shape[1]))
-                    predict_class.append(int(torch.argmax(predict_prob)))
-                for i in range(0, X.shape[0]):
-                    dfTest.loc[i, 'Class'] = predict_class[i]
-            else:
-                predict_class = self.model.predict(X)
-                for i in range(0, X.shape[0]):
-                    dfTest.loc[i, 'Class'] = int(predict_class[i])
-        dfTest.to_csv('files/OracleData.csv', index=False, header=True)
+            predict_class = self.model.predict(X)
+            for i in range(0, X.shape[0]):
+                dfTest.loc[i, 'Class'] = int(predict_class[i])
+        local_save(dfTest, 'OracleData', force_rewrite=True)
 
 
 class propCheck:
@@ -226,9 +221,10 @@ class propCheck:
             self.paramDict['mul_cex_opt'] = mul_cex
             self.paramDict['multi_label'] = False
 
-            f = open('files/MUTWeight.txt', 'w')
+            # f = open('files/MUTWeight.txt', 'w')
+            mut_weight = ""
             if not model_with_weight:
-                f.write(str(False))
+                mut_weight += str(False)
                 if model_type == 'sklearn':
                     if model is None:
                         if model_path == '':
@@ -247,13 +243,14 @@ class propCheck:
                     raise Exception("Please provide the type of the model (Pytorch/sklearn)")
 
             else:
-                dfWeight = pd.read_csv('MUTWeight.csv')
+                dfWeight = local_load('MUTWeight')
                 pred_weight = dfWeight.values
                 pred_weight = pred_weight[:, :-1]
                 self.model = pred_weight
-                f.write(str(True))
+                mut_weight += str(True)
 
-            f.close()
+            local_save(mut_weight, 'MUTWeight', force_rewrite=True)
+            # f.close()
 
             if no_of_train is None:
                 self.no_of_train = 1000
@@ -293,13 +290,14 @@ class propCheck:
 class runChecker:
 
     def __init__(self):
-        self.df = pd.read_csv('files/OracleData.csv')
-        f = open('files/MUTWeight.txt', 'r')
-        self.MUTcontent = f.readline()
-        f.close()
+        self.df = local_load('OracleData')
+        # f = open('files/MUTWeight.txt', 'r')
+        # self.MUTcontent = f.readline()
+        self.MUTcontent = file_exists('MUTWeigsht')
+        # f.close()
         self.paramDict = local_load('param_dict')
 
-        if self.MUTcontent == 'False':
+        if not self.MUTcontent:
             self.model_type = self.paramDict['model_type']
             if 'model_path' in self.paramDict:
                 model_path = self.paramDict['model_path']
@@ -307,39 +305,41 @@ class runChecker:
             else:
                 self.model = load('Model/MUT.joblib')
         else:
-            dfWeight = pd.read_csv('MUTWeight.csv')
+            dfWeight = local_load('MUTWeight')
             pred_weight = dfWeight.values
             pred_weight = pred_weight[:, :-1]
             self.model = pred_weight
-        with open('files/TestSet.csv', 'w', newline='') as csvfile:
-            fieldnames = self.df.columns.values
-            writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)
-        with open('files/CexSet.csv', 'w', newline='') as csvfile:
-            fieldnames = self.df.columns.values
-            writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)
+        # with open('files/TestSet.csv', 'w', newline='') as csvfile:
+        #     fieldnames = self.df.columns.values
+        #     writer = cv.writer(csvfile)
+        #     writer.writerow(fieldnames)
+        local_save(self.df, 'TestSet', force_rewrite=True)
+        # with open('files/CexSet.csv', 'w', newline='') as csvfile:
+        #     fieldnames = self.df.columns.values
+        #     writer = cv.writer(csvfile)
+        #     writer.writerow(fieldnames)
+        local_save(self.df, 'CexSet', force_rewrite=True)
 
     def funcCreateOracle(self):
-        dfTest = pd.read_csv('files/TestingData.csv')
+        dfTest = local_load('TestingData')
         data = dfTest.values
         X = data[:, :-1]
-        if self.MUTcontent == 'False':
+        if not self.MUTcontent:
             predict_class = self.model.predict(X)
             for i in range(0, X.shape[0]):
                 dfTest.loc[i, 'Class'] = predict_class[i]
-            dfTest.to_csv('files/OracleData.csv', index=False, header=True)
+            local_save(dfTest, 'OracleData', force_rewrite=True)
         else:
             predict_list = np.zeros((1, dfTest.shape[0]))
             for i in range(0, X.shape[0]):
                 predict_list[0][i] = np.sign(np.dot(self.model, X[i]))
                 dfTest.loc[i, 'Class'] = int(predict_list[0][i])
-            dfTest.to_csv('files/OracleData.csv', index=False, header=True)
+            local_save(dfTest, 'OracleData', force_rewrite=True)
 
     def chkPairBel(self, tempMatrix, noAttr):
         firstTest = np.zeros((noAttr,))
         secTest = np.zeros((noAttr,))
-        dfT = pd.read_csv('files/TestingSet.csv')
+        dfT = local_load('TestingSet')
         tstMatrix = dfT.values
 
         for i in range(0, noAttr):
@@ -356,7 +356,7 @@ class runChecker:
 
     def chkAttack(self, target_class):
         cexPair = ()
-        dfTest = pd.read_csv('files/TestingSet.csv')
+        dfTest = local_load('TestingSet')
         dataTest = dfTest.values
         i = 0
         X = torch.tensor(dataTest, dtype=torch.float32)
@@ -371,58 +371,9 @@ class runChecker:
             i = i + 1
         return cexPair, False
 
-    def checkWithOracle(self):
-        assume_dict = []
-        f = open('files/assumeStmnt.txt', 'r')
-        p = f.readlines()
-        dfTr = pd.read_csv('Datasets/mnist_resized.csv')
-        noOfAttr = dfTr.shape[1] - 1
-        i = 0
-        for lines in p:
-            if p == '\n':
-                pass
-            else:
-                for col in dfTr.columns.values:
-                    if col in lines:
-                        num = float(re.search(r'[+-]?([0-9]*[.])[0-9]+', lines).group(0))
-                        assume_dict.append(num)
-                        i += 1
-        f1 = open('files/assertStmnt.txt', 'r')
-        p1 = f1.readlines()
-        num1 = float(re.search(r'[+-]?([0-9]*[.])[0-9]+', p1[0]).group(0))
-        with open('files/TestingSet.csv', 'w', newline='') as csvfile:
-            fieldnames = dfTr.columns.values
-            writer = cv.writer(csvfile)
-            writer.writerow(fieldnames)
-        dfAg = pd.read_csv('files/TestingSet.csv')
-        dfAg.drop('Class', axis=1, inplace=True)
-        dfAg.to_csv('files/TestingSet.csv', index=False, header=True)
-        inst_count = 0
-        i = 0
-        while inst_count < 1000:
-            tempMatrix = np.zeros((1, noOfAttr))
-            for i in range(0, len(assume_dict)):
-                tempMatrix[0][i] = assume_dict[i]
-            for i in range(len(assume_dict), noOfAttr):
-                fe_type = dfTr.dtypes[i]
-                fe_type = str(fe_type)
-                if 'int' in fe_type:
-                    tempMatrix[0][i] = rd.randint(dfTr.iloc[:, i].min(), dfTr.iloc[:, i].max())
-                else:
-                    tempMatrix[0][i] = rd.uniform(dfTr.iloc[:, i].min(), dfTr.iloc[:, i].max())
-            if not self.chkPairBel(tempMatrix, noOfAttr):
-                with open('files/TestingSet.csv', 'a', newline='') as csvfile:
-                    writer = cv.writer(csvfile)
-                    writer.writerows(tempMatrix)
-            inst_count = inst_count + 1
-        cexPair, flag = self.chkAttack(num1)
-        if flag:
-            return cexPair, True
-        return cexPair, False
-
     def funcPrediction(self, X, dfCand, testIndx):
-        if self.MUTcontent == 'False':
-            if self.MUTcontent == 'False':
+        if not self.MUTcontent:
+            if not self.MUTcontent:
                 return self.model.predict(util.convDataInst(X, dfCand, testIndx, 1))
         else:
             temp_class = np.sign(np.dot(self.model, X[testIndx]))
@@ -432,9 +383,9 @@ class runChecker:
                 return temp_class
 
     def addModelPred(self):
-        dfCexSet = pd.read_csv('files/CexSet.csv')
+        dfCexSet = local_load('CexSet')
         dataCex = dfCexSet.values
-        if self.MUTcontent == 'False':
+        if not self.MUTcontent:
             predict_class = self.model.predict(dataCex[:, :-1])
             for i in range(0, dfCexSet.shape[0]):
                 dfCexSet.loc[i, 'Class'] = predict_class[i]
@@ -446,7 +397,7 @@ class runChecker:
                 if predict_list[0][i] < 0:
                     predict_list[0][i] = 0
                 dfCexSet.loc[i, 'Class'] = predict_list[0][i]
-        dfCexSet.to_csv('files/CexSet.csv', index=False, header=True)
+        local_save(dfCexSet, 'CexSet', force_rewrite=True)
 
     def runWithTree(self):
         retrain_flag = False
