@@ -1,5 +1,4 @@
 import pandas as pd
-import csv as cv
 import numpy as np
 import random as rd
 from parsimonious.nodes import NodeVisitor
@@ -86,11 +85,6 @@ class generateData:
 
         local_save(pd.DataFrame(testMatrix, columns=self.nameArr), 'TestingData', force_rewrite=True)
 
-        # with open('files/TestingData.csv', 'w', newline='') as csvfile:
-        #     writer = cv.writer(csvfile)
-        #     writer.writerow(self.nameArr)
-        #     writer.writerows(testMatrix)
-
         if self.paramDict['train_data_available']:
             dfTrainData = pd.read_csv(self.paramDict['train_data_loc'])
             self.generateTestTrain(dfTrainData, int(self.paramDict['train_ratio']))
@@ -116,9 +110,6 @@ class generateData:
                 testCount = testCount + 1
 
         local_save(pd.DataFrame(testMatrix), 'TestingData')
-        # with open('files/TestingData.csv', 'a', newline='') as csvfile:
-        #     writer = cv.writer(csvfile)
-        #     writer.writerows(testMatrix)
 
 
 class dataFrameCreate(NodeVisitor):
@@ -173,9 +164,9 @@ class makeOracleData:
 class propCheck:
 
     def __init__(self, max_samples=None, deadline=None, model=None, no_of_params=None, mul_cex=False,
-                 white_box_model=None, no_of_layers=None, layer_size=None, no_of_class=None,
-                 no_EPOCHS=None, model_with_weight=False, train_data_available=False, train_data_loc='',
-                 multi_label=False, model_type=None, model_path='', no_of_train=None, train_ratio=None):
+                 white_box_model=None, no_of_class=None, no_EPOCHS=None, model_with_weight=False,
+                 train_data_available=False, train_data_loc='', multi_label=False, model_type=None,
+                 model_path='', no_of_train=None, train_ratio=None):
 
         self.paramDict = {}
 
@@ -221,7 +212,6 @@ class propCheck:
             self.paramDict['mul_cex_opt'] = mul_cex
             self.paramDict['multi_label'] = False
 
-            # f = open('files/MUTWeight.txt', 'w')
             mut_weight = ""
             if not model_with_weight:
                 mut_weight += str(False)
@@ -250,7 +240,6 @@ class propCheck:
                 mut_weight += str(True)
 
             local_save(mut_weight, 'MUTWeight', force_rewrite=True)
-            # f.close()
 
             if no_of_train is None:
                 self.no_of_train = 1000
@@ -291,10 +280,7 @@ class runChecker:
 
     def __init__(self):
         self.df = local_load('OracleData')
-        # f = open('files/MUTWeight.txt', 'r')
-        # self.MUTcontent = f.readline()
         self.MUTcontent = file_exists('MUTWeigsht')
-        # f.close()
         self.paramDict = local_load('param_dict')
 
         if not self.MUTcontent:
@@ -309,15 +295,8 @@ class runChecker:
             pred_weight = dfWeight.values
             pred_weight = pred_weight[:, :-1]
             self.model = pred_weight
-        # with open('files/TestSet.csv', 'w', newline='') as csvfile:
-        #     fieldnames = self.df.columns.values
-        #     writer = cv.writer(csvfile)
-        #     writer.writerow(fieldnames)
+
         local_save(self.df, 'TestSet', force_rewrite=True)
-        # with open('files/CexSet.csv', 'w', newline='') as csvfile:
-        #     fieldnames = self.df.columns.values
-        #     writer = cv.writer(csvfile)
-        #     writer.writerow(fieldnames)
         local_save(self.df, 'CexSet', force_rewrite=True)
 
     def funcCreateOracle(self):
@@ -424,7 +403,6 @@ class runChecker:
                     print('No CEX is found by the checker at the first trial')
                     return 0
                 elif (count != 0) and (self.mul_cex):
-                    # dfCexSet = pd.read_csv('files/CexSet.csv')
                     dfCexSet = local_load('CexSet')
                     if round(dfCexSet.shape[0] / self.no_of_params) == 0:
                         print('No CEX is found')
@@ -479,15 +457,9 @@ class runChecker:
                             testIndx += 1
                     if temp_count == self.no_of_params:
                         if self.mul_cex:
-                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                            #     writer = cv.writer(csvfile)
-                            #     writer.writerows(temp_store)
                             local_save(temp_store, 'CexSet')
                         else:
                             print('A counter example is found, check it in files/CexSet.csv file: ', temp_store)
-                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                            #     writer = cv.writer(csvfile)
-                            #     writer.writerows(temp_store)
                             local_save(temp_store, 'CexSet')
                             self.addModelPred()
                             return 1

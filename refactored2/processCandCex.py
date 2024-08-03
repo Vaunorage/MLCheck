@@ -1,5 +1,4 @@
 import pandas as pd
-import csv as cv
 from refactored2 import Pruning
 import numpy as np
 
@@ -8,45 +7,22 @@ from refactored2.util import local_load, local_save
 
 def funcAddCex2CandidateSet():
     df = local_load('TestDataSMT')
-    # data = df.values
     local_save(df, 'CandidateSet', force_rewrite=True)
-    # with open('files/CandidateSet.csv', 'w', newline='') as csvfile:
-    #     fieldnames = df.columns.values
-    #     writer = cv.writer(csvfile)
-    #     writer.writerow(fieldnames)
-    #     writer.writerows(data)
-
 
 def funcAddCexPruneCandidateSet(tree_model):
     df = local_load('TestDataSMT')
-    # data = df.values
 
-    # with open('TestDataSMTMain', 'w', newline='') as csvfile:
-    #     fieldnames = df.columns.values
-    #     writer = cv.writer(csvfile)
-    #     writer.writerow(fieldnames)
-    #     writer.writerows(data)
     local_save(df, 'TestDataSMTMain', force_rewrite=True)
 
     df = local_load('OracleData')
     # Pruning by negating the data instance
     Pruning.funcPrunInst(df, False)
     dfInst = local_load('CandidateSetInst')
-    # dataInst = dfInst.values
-
-    # with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
-    #     writer = cv.writer(csvfile)
-    #     writer.writerows(dataInst)
-
     local_save(dfInst, 'CandidateSet')
 
     # Pruning by toggling the branch conditions
     Pruning.funcPrunBranch(df, tree_model)
     dfBranch = local_load('CandidateSetBranch')
-    # dataBranch = dfBranch.values
-    # with open('files/CandidateSet.csv', 'a', newline='') as csvfile:
-    #     writer = cv.writer(csvfile)
-    #     writer.writerows(dataBranch)
     local_save(dfBranch, 'CandidateSet')
 
 
@@ -90,16 +66,7 @@ def funcCheckCex():
             testIndx = testIndx + 2
             candIndx = candIndx + 2
 
-            # with open('files/TestSet.csv', 'a', newline='') as csvfile:
-    #     writer = cv.writer(csvfile)
-    #     writer.writerows(testMatrix)
     local_save(pd.DataFrame(testMatrix), 'TestSet')
-
-    # with open('files/Cand-Set.csv', 'w', newline='') as csvfile:
-    #     fieldnames = dfCandidate.columns.values
-    #     writer = cv.writer(csvfile)
-    #     writer.writerow(fieldnames)
-    #     writer.writerows(testMatrix)
 
     local_save(pd.DataFrame(testMatrix, columns=dfCandidate.columns.values), 'Cand-Set')
 

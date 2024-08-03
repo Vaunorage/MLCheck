@@ -104,15 +104,6 @@ def run_z3(input_file, output_file):
         f"z3 {files_folder.joinpath(input_file).as_posix()}.txt > {files_folder.joinpath(output_file).as_posix()}.txt")
 
 
-def file_len(fname):
-    if (os.stat(fname).st_size == 0):
-        return 'empty'
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
-
-
 def convDataInst(X, df, j, no_of_class):
     paramDict = local_load('param_dict')
     if (paramDict['multi_label']):
@@ -126,10 +117,7 @@ def convDataInst(X, df, j, no_of_class):
 
 
 def funcAdd2Oracle(data):
-    # with open('files/TestingData.csv', 'a', newline='') as csvfile:
-    #     writer = cv.writer(csvfile)
-    #     writer.writerows(data)
-    local_save(data, 'TestingData')
+    local_save(pd.DataFrame(data), 'TestingData')
 
 
 def funcCreateOracle(no_of_class, multi_label, model):
@@ -148,7 +136,6 @@ def funcCreateOracle(no_of_class, multi_label, model):
             className = str(df.columns.values[index + i])
             for j in range(0, X.shape[0]):
                 df.loc[j, className] = predict_class[j][i]
-    # df.to_csv('files/OracleData.csv', index=False, header=True)
     local_save(df, 'OracleData', force_rewrite=True)
 
 
@@ -163,7 +150,3 @@ def storeAssumeAssert(file_name, no_assumption=False):
         local_save(f2_content, file_name)
     f3_content = local_load('assertStmnt')
     local_save(f3_content, file_name)
-    # with open('files/assertStmnt.txt') as f3:
-    #     f3_content = f3.readlines()
-    # f3_content = list(set([x.strip() for x in f3_content]))
-    # addContent(file_name, f3_content)

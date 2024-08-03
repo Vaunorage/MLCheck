@@ -1,15 +1,11 @@
 import pandas as pd
-import csv as cv
 import numpy as np
-from refactored2 import util
-import os
 import re
 
 from refactored2.util import local_load, local_save
 
 
 def convert_z3_output_to_df(file_content, df, paramDict):
-
     # Regex pattern to match the define-fun declarations
     pattern = r'\(define-fun\s+(\w+?)(\d)\s+\(\)\s+(\w+)\s*\n\s*(\d+)\)'
 
@@ -35,11 +31,6 @@ def convert_z3_output_to_df(file_content, df, paramDict):
 
 def funcConvZ3OutToData(df):
     paramDict = local_load('param_dict')
-    # testMatrix = np.zeros(((no_of_params), df.shape[1]))
-
-    # if (os.stat('files/FinalOutput.txt').st_size > 0):
-    #     with open('files/FinalOutput.txt') as f1:
-
     file_content = local_load('FinalOutput')
 
     if ('unknown' in file_content[0]):
@@ -50,9 +41,5 @@ def funcConvZ3OutToData(df):
     # Create DataFrame from the data dictionary
     dfAgain = convert_z3_output_to_df(file_content, df, paramDict)
 
-    # dfAgain.to_csv('files/TestDataSMT.csv', index=False, header=True)
     local_save(dfAgain, 'TestDataSMT', force_rewrite=True)
     return True
-
-    # else:
-    #     raise Exception("There is no solver installed in your system")

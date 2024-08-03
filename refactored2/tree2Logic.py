@@ -1,8 +1,6 @@
-import pandas as pd
-import csv as cv
 import numpy as np
 
-from refactored2.util import local_load
+from refactored2.util import local_load, local_save
 
 try:
     from StringIO import StringIO
@@ -14,62 +12,59 @@ from sklearn.tree import _tree
 
 
 def tree_to_code(tree, feature_names):
-    f = open('files/TreeOutput.txt', 'w')
     tree_ = tree.tree_
     feature_name = [
         feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
         for i in tree_.feature
     ]
-    f.write("def tree({}):".format(", ".join(feature_names)))
-    f.write("\n")
+    f = "def tree({}):".format(", ".join(feature_names))
+    f += "\n"
 
     def recurse(node, depth):
+        nonlocal f  # This allows us to modify the string 'f' within the nested function
         indent = "  " * depth
 
         if tree_.feature[node] != _tree.TREE_UNDEFINED:
             name = feature_name[node]
             threshold = tree_.threshold[node]
 
-            f.write("{}if {} <= {}:".format(indent, name, threshold))
-            f.write("\n")
+            f += "{}if {} <= {}:".format(indent, name, threshold)
+            f += "\n"
 
-            f.write("{}".format(indent) + "{")
-            f.write("\n")
+            f += "{}".format(indent) + "{"
+            f += "\n"
 
             recurse(tree_.children_left[node], depth + 1)
 
-            f.write("{}".format(indent) + "}")
-            f.write("\n")
+            f += "{}".format(indent) + "}"
+            f += "\n"
 
-            f.write("{}else:  # if {} > {}".format(indent, name, threshold))
-            f.write("\n")
+            f += "{}else:  # if {} > {}".format(indent, name, threshold)
+            f += "\n"
 
-            f.write("{}".format(indent) + "{")
-            f.write("\n")
+            f += "{}".format(indent) + "{"
+            f += "\n"
 
             recurse(tree_.children_right[node], depth + 1)
 
-            f.write("{}".format(indent) + "}")
-            f.write("\n")
+            f += "{}".format(indent) + "}"
+            f += "\n"
 
         else:
-            f.write("{}return {}".format(indent, np.argmax(tree_.value[node][0])))
-            f.write("\n")
+            f += "{}return {}".format(indent, np.argmax(tree_.value[node][0]))
+            f += "\n"
 
     recurse(0, 1)
-    f.close()
+
+    local_save(f, 'TreeOutput', force_rewrite=True)
 
 
-def file_len(fname):
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
+# Ensure the final string is returned
 
 
 def funcConvBranch(single_branch, dfT, rep):
-    f = open('files/DecSmt.txt', 'a')
-    f.write("(assert (=> (and ")
+    f = local_load('DecSmt')
+    f += "(assert (=> (and "
     for i in range(0, len(single_branch)):
         temp_Str = single_branch[i]
         if ('if' in temp_Str):
@@ -95,14 +90,14 @@ def funcConvBranch(single_branch, dfT, rep):
             elif ('float' in data_type):
                 digit = float(re.search(r'\d+', temp_Str).group(0))
             digit = str(digit)
-            f.write("(" + sign + " " + fe_name + str(rep) + " " + digit + ") ")
+            f += "(" + sign + " " + fe_name + str(rep) + " " + digit + ") "
 
         elif ('return' in temp_Str):
             digit_class = int(re.search(r'\d+', temp_Str).group(0))
             digit_class = str(digit_class)
-            f.write(") (= Class" + str(rep) + " " + digit_class + ")))")
-            f.write('\n')
-    f.close()
+            f += ") (= Class" + str(rep) + " " + digit_class + ")))"
+            f += '\n'
+    local_save(f, 'DecSmt', force_rewrite=True)
 
 
 def funcGetBranch(sinBranch, dfT, rep):
@@ -113,13 +108,10 @@ def funcGetBranch(sinBranch, dfT, rep):
 
 
 def funcGenBranch(dfT, rep):
-    with open('files/TreeOutput.txt') as f1:
-        file_content = f1.readlines()
+    file_content = local_load('TreeOutput').splitlines()
     file_content = [x.strip() for x in file_content]
 
-    f1.close()
-
-    noOfLines = file_len('files/TreeOutput.txt')
+    noOfLines = len(file_content)
     temp_file_cont = ["" for x in range(noOfLines)]
 
     i = 1
@@ -136,7 +128,6 @@ def funcGenBranch(dfT, rep):
                     j = j - 1
                     break
                 elif (j >= 0):
-                    # print(temp_file_cont.pop(i))
                     temp_file_cont[j] = ''
                     j = j - 1
 
@@ -144,84 +135,61 @@ def funcGenBranch(dfT, rep):
 
         else:
             temp_file_cont[k] = file_content[i]
-            # print(temp_file_cont)
             k = k + 1
             i = i + 1
-            # print(temp_file_cont.shape)
-
-    # return temp_file_cont
-    # print(temp_file_cont)
 
     if ('return' in file_content[1]):
         digit = int(re.search(r'\d+', file_content[1]).group(0))
-        f = open('files/DecSmt.txt', 'a')
-        f.write("(assert (= Class" + str(rep) + " " + str(digit) + "))")
-        f.write("\n")
-        f.close()
+        f = local_load('DecSmt')
+        f += "(assert (= Class" + str(rep) + " " + str(digit) + "))"
+        f += "\n"
+        local_save(f, 'DecSmt', force_rewrite=True)
     else:
         funcGetBranch(temp_file_cont, dfT, rep)
 
 
-def funcConv(dfT, no_of_instances):
-    # s = Stack()
-
-    temp_content = ['']
-    rep = 0
-    min_val = 0
-    max_val = 0
-
-    # with open('files/feNameType.csv') as csv_file:
-    #     reader = cv.reader(csv_file)
-    #     feName_type = dict(reader)
-
+def funcGenSMTFairness(dfT, no_of_instances):
     feName_type = local_load('feNameType')
-    
-    f = open('files/DecSmt.txt', 'w')
+
+    f = ''
     for j in range(0, no_of_instances):
         for i in range(0, dfT.columns.values.shape[0] - 1):
             tempStr = dfT.columns.values[i]
-            ''' 
-            fe_type = dfT.dtypes[i]
-            fe_type = str(fe_type)
-            '''
             fe_type = feName_type[tempStr]
 
             if ('int' in fe_type):
-                f.write("(declare-fun " + tempStr + str(j) + " () Int)")
-                f.write('\n')
-                f.write('\n')
+                f += "(declare-fun " + tempStr + str(j) + " () Int)"
+                f += '\n'
+                f += '\n'
             elif ('float' in fe_type):
-                f.write("(declare-fun " + tempStr + str(j) + " () Real)")
-                f.write('\n')
-                f.write('\n')
-        f.write("; " + str(j) + "th element")
-        f.write('\n')
+                f += "(declare-fun " + tempStr + str(j) + " () Real)"
+                f += '\n'
+                f += '\n'
+        f += "; " + str(j) + "th element"
+        f += '\n'
 
     for i in range(0, no_of_instances):
-        f.write("(declare-fun Class" + str(i) + " () Int)")
-        f.write('\n')
+        f += "(declare-fun Class" + str(i) + " () Int)"
+        f += '\n'
 
     # Writing the functions for computing absolute integer & real value
-    f.write('(define-fun absoluteInt ((x Int)) Int \n')
-    f.write('  (ite (>= x 0) x (- x))) \n')
+    f += '(define-fun absoluteInt ((x Int)) Int \n'
+    f += '  (ite (>= x 0) x (- x))) \n'
 
-    f.write('(define-fun absoluteReal ((x Real)) Real \n')
-    f.write('  (ite (>= x 0) x (- x))) \n')
-    f.close()
+    f += '(define-fun absoluteReal ((x Real)) Real \n'
+    f += '  (ite (>= x 0) x (- x))) \n'
+
+    local_save(f, 'DecSmt', force_rewrite=True)
 
     # Calling function to get the branch and convert it to z3 form,  creating alias
     for i in range(0, no_of_instances):
-        f = open('files/DecSmt.txt', 'a')
-        f.write('\n;-----------' + str(i) + '-----------number instance-------------- \n')
-        f.close()
+        f = local_load('DecSmt')
+        f += '\n;-----------' + str(i) + '-----------number instance-------------- \n'
+        local_save(f, 'DecSmt', force_rewrite=True)
         funcGenBranch(dfT, i)
 
 
-def funcGenSMTFairness(df, no_of_instances):
-    funcConv(df, no_of_instances)
-
-
 def functree2LogicMain(tree, no_of_instances):
-    df = pd.read_csv('files/OracleData.csv')
+    df = local_load('OracleData')
     tree_to_code(tree, df.columns)
     funcGenSMTFairness(df, no_of_instances)

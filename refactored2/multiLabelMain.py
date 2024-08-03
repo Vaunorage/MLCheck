@@ -1,11 +1,6 @@
-#!/usr/bin/env python
-
-
 import pandas as pd
-import csv as cv
 import numpy as np
 import random as rd
-import sys
 from parsimonious.nodes import NodeVisitor
 from parsimonious.grammar import Grammar
 import re
@@ -68,27 +63,20 @@ class generateData:
     def funcGenerateTestData(self):
         tst_pm = int(self.paramDict['no_of_train'])
         testMatrix = np.zeros(((tst_pm + 1), len(self.nameArr)), dtype=object)
-        feature_track = []
-        flg = False
 
         i = 0
         while i <= tst_pm:
-            # Generating a test sample
             temp = self.funcGenData()
-            # Checking whether that sample already in the test dataset
             flg = self.funcCheckUniq(testMatrix, temp)
             if not flg:
                 for j in range(0, len(self.nameArr)):
                     testMatrix[i][j] = temp[0][j]
                 i = i + 1
 
-        with open('files/TestingData.csv', 'w', newline='') as csvfile:
-            writer = cv.writer(csvfile)
-            writer.writerow(self.nameArr)
-            writer.writerows(testMatrix)
+        local_save(pd.DataFrame(testMatrix, columns=self.nameArr), 'TestingData', force_rewrite=True)
 
         if self.paramDict['train_data_available']:
-            dfTrainData = pd.read_csv(self.paramDict['train_data_loc'])
+            dfTrainData = local_load(self.paramDict['train_data_loc'])
             self.generateTestTrain(dfTrainData, int(self.paramDict['train_ratio']))
 
     # Function to take train data as test data
@@ -96,7 +84,6 @@ class generateData:
         tst_pm = round((train_ratio * dfTrainData.shape[0]) / 100)
         data = dfTrainData.values
         testMatrix = np.zeros(((tst_pm + 1), dfTrainData.shape[1]))
-        flg = True
         testCount = 0
         ratioTrack = []
         noOfRows = dfTrainData.shape[0]
@@ -112,9 +99,8 @@ class generateData:
                 ratioTrack.append(ratio)
                 testMatrix[testCount] = data[ratio]
                 testCount = testCount + 1
-        with open('files/TestingData.csv', 'a', newline='') as csvfile:
-            writer = cv.writer(csvfile)
-            writer.writerows(testMatrix)
+
+        local_save(pd.DataFrame(testMatrix), 'TestingData')
 
 
 class dataFrameCreate(NodeVisitor):
@@ -143,66 +129,6 @@ class dataFrameCreate(NodeVisitor):
         self.feMaxVal = digit
 
 
-class readXmlFile:
-    def __init__(self, fileName):
-        self.fileName = fileName
-
-    def funcReadXml(self):
-        grammar = Grammar(
-            r"""
-        
-            expr             = name / type / minimum / maximum / xmlStartDoc / xmlStartInps / xmlEndInps / xmlStartInp /
-                                                                        xmlEndInp / xmlStartValTag /xmlEndValTag
-            name             = xmlStartNameTag feName xmlEndNameTag
-            type             = xmlStartTypeTag feType xmlEndTypeTag
-            minimum          = xmlStartMinTag number xmlEndMinTag
-            maximum          = xmlStartMaxTag number xmlEndMaxTag
-            xmlStartDoc      = '<?xml version="1.0" encoding="UTF-8"?>'
-            xmlStartInps     = "<Inputs>"
-            xmlEndInps       = "<\Inputs>"
-            xmlStartInp      = "<Input>"
-            xmlEndInp        = "<\Input>"
-            xmlStartNameTag  = "<Feature-name>"
-            xmlEndNameTag    = "<\Feature-name>"
-            xmlStartTypeTag  = "<Feature-type>"
-            xmlEndTypeTag    = "<\Feature-type>"
-            xmlStartValTag   = "<Value>"
-            xmlEndValTag     = "<\Value>"
-            xmlStartMinTag   = "<minVal>"
-            xmlEndMinTag     = "<\minVal>"
-            xmlStartMaxTag   = "<maxVal>"
-            xmlEndMaxTag     = "<\maxVal>"
-            feName           = ~"([a-zA-Z_][a-zA-Z0-9_]*)"
-            feType           = ~"[A-Z 0-9]*"i
-            number           = ~"[+-]?([0-9]*[.])?[0-9]+"
-            """
-        )
-
-        with open(self.fileName) as f1:
-            file_content = f1.readlines()
-        file_content = [x.strip() for x in file_content]
-
-        feNameArr = []
-        feTypeArr = []
-        minValArr = []
-        maxValArr = []
-        for lines in file_content:
-            tree = grammar.parse(lines)
-            dfObj = dataFrameCreate()
-            dfObj.visit(tree)
-            if dfObj.feName is not None:
-                feNameArr.append(dfObj.feName)
-            if dfObj.feType is not None:
-                feTypeArr.append(dfObj.feType)
-            if dfObj.feMinVal != -99999:
-                minValArr.append(dfObj.feMinVal)
-            if dfObj.feMaxVal != 0:
-                maxValArr.append(dfObj.feMaxVal)
-
-        genDataObj = generateData(feNameArr, feTypeArr, minValArr, maxValArr)
-        genDataObj.funcGenerateTestData()
-
-
 class makeOracleData:
     def __init__(self, model, train_data, train_data_loc):
         self.model = model
@@ -210,19 +136,17 @@ class makeOracleData:
 
     def funcGenOracle(self):
         noOfClasses = int(self.paramDict['no_of_class'])
-        dfTest = pd.read_csv('files/TestingData.csv')
+        dfTest = local_load('TestingData')
         dataTest = dfTest.values
         X = dataTest[:, :-noOfClasses]
         predict_class = self.model.predict(X)
-        with open('PredictClass.csv', 'w', newline='') as csvfile:
-            writer = cv.writer(csvfile)
-            writer.writerows(predict_class)
+        local_save(predict_class, 'PredictClass', force_rewrite=True)
 
         for i in range(0, noOfClasses):
             className = str(dfTest.columns.values[dfTest.shape[1] - noOfClasses + i])
             for j in range(0, X.shape[0]):
                 dfTest.loc[j, className] = predict_class[j][i]
-        dfTest.to_csv('files/OracleData.csv', index=False, header=True)
+        local_save(dfTest, 'OracleData', force_rewrite=True)
 
 
 class multiLabelPropCheck:
@@ -299,10 +223,6 @@ class multiLabelPropCheck:
         self.paramDict['train_data_loc'] = train_data_loc
 
         try:
-            # with open('files/param_dict.csv', 'w') as csv_file:
-            #     writer = cv.writer(csv_file)
-            #     for key, value in self.paramDict.items():
-            #         writer.writerow([key, value])
             local_save(self.paramDict, 'param_dict', force_rewrite=True)
         except IOError:
             print("I/O error")
@@ -327,15 +247,7 @@ class runChecker:
             self.model = load(self.paramDict['model_path'])
         else:
             self.model = load('Model/MUT.joblib')
-        # with open('files/TestSet.csv', 'w', newline='') as csvfile:
-        #     fieldnames = self.df.columns.values
-        #     writer = cv.writer(csvfile)
-        #     writer.writerow(fieldnames)
         local_save(self.df, 'TestSet', force_rewrite=True)
-        # with open('files/CexSet.csv', 'w', newline='') as csvfile:
-        #     fieldnames = self.df.columns.values
-        #     writer = cv.writer(csvfile)
-        #     writer.writerow(fieldnames)
         local_save(self.df, 'CexSet', force_rewrite=True)
         self.max_samples = int(self.paramDict['max_samples'])
         self.no_of_params = int(self.paramDict['no_of_params'])
@@ -369,7 +281,6 @@ class runChecker:
             className = str(self.df.columns.values[index + i])
             for j in range(0, X.shape[0]):
                 dfCexSet.loc[j, className] = predict_class[j][i]
-        # dfCexSet.to_csv('files/CexSet.csv', index=False, header=True)
         local_save(dfCexSet, 'CexSet', force_rewrite=True)
 
     def runPropCheck(self):
@@ -377,7 +288,6 @@ class runChecker:
         MAX_CAND_ZERO = 5
         count_cand_zero = 0
         count = 0
-        satFlag = False
         start_time = time.time()
 
         while count < self.max_samples:
@@ -451,15 +361,9 @@ class runChecker:
                             testIndx += 1
                     if temp_count == self.no_of_params:
                         if self.mul_cex:
-                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                            #     writer = cv.writer(csvfile)
-                            #     writer.writerows(temp_store)
                             local_save(pd.DataFrame(temp_store), 'CexSet')
                         else:
                             print('A counter example is found, check it in files/CexSet.csv file: ', temp_store)
-                            # with open('files/CexSet.csv', 'a', newline='') as csvfile:
-                            #     writer = cv.writer(csvfile)
-                            #     writer.writerows(temp_store)
                             local_save(pd.DataFrame(temp_store), 'CexSet')
                             self.addModelPred()
                             return 1
