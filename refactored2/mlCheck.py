@@ -10,7 +10,6 @@ import os
 from paths import HERE
 from refactored2 import trainDecTree, tree2Logic, ReadZ3Output, processCandCex, util, assume2logic, assert2logic
 from joblib import dump, load
-from refactored2 import multiLabelMain
 import time
 
 from refactored2.util import local_save, local_load, file_exists, get_file_path
@@ -162,118 +161,122 @@ class makeOracleData:
 
 
 class propCheck:
-
-    def __init__(self, max_samples=None, deadline=None, model=None, no_of_params=None, mul_cex=False,
-                 white_box_model=None, no_of_class=None, no_EPOCHS=None, model_with_weight=False,
-                 train_data_available=False, train_data_loc='', multi_label=False, model_type=None,
-                 model_path='', no_of_train=None, train_ratio=None):
+    def __init__(
+            self,
+            max_samples=None,
+            deadline=None,
+            model=None,
+            no_of_params=None,
+            mul_cex=False,
+            white_box_model=None,
+            no_of_class=None,
+            no_EPOCHS=None,
+            model_with_weight=False,
+            train_data_available=False,
+            train_data_loc="",
+            multi_label=False,
+            model_path="",
+            no_of_train=None,
+            train_ratio=None,
+            model_type=None,
+    ):
 
         self.paramDict = {}
-
-        if multi_label:
-            if no_of_class is None:
-                raise Exception('Please provide the number of classes the dataset contain')
-            else:
-                self.paramDict['no_of_class'] = no_of_class
-            multiLabelMain.multiLabelPropCheck(no_of_params=no_of_params, max_samples=max_samples, deadline=deadline,
-                                               model=model, no_of_class=no_of_class, mul_cex=mul_cex,
-                                               white_box_model=white_box_model, no_EPOCHS=no_EPOCHS,
-                                               model_path=model_path,
-                                               no_of_train=None, train_ratio=None, model_type=model_type)
+        if max_samples is None:
+            self.max_samples = 1000
         else:
-            if max_samples is None:
-                self.max_samples = 1000
-            else:
-                self.max_samples = max_samples
-            self.paramDict['max_samples'] = self.max_samples
+            self.max_samples = max_samples
+        self.paramDict["max_samples"] = self.max_samples
 
-            if deadline is None:
-                self.deadline = 500000
-            else:
-                self.deadline = deadline
-            self.paramDict['deadlines'] = self.deadline
+        if deadline is None:
+            self.deadline = 500000
+        else:
+            self.deadline = deadline
+        self.paramDict["deadlines"] = self.deadline
 
-            if white_box_model is None:
-                self.white_box_model = 'Decision tree'
-            else:
-                self.white_box_model = white_box_model
-            self.paramDict['white_box_model'] = self.white_box_model
+        if white_box_model is None:
+            self.white_box_model = "Decision tree"
+        else:
+            self.white_box_model = white_box_model
+        self.paramDict["white_box_model"] = self.white_box_model
+        self.paramDict["no_of_class"] = no_of_class
 
-            if no_EPOCHS is None:
-                self.paramDict['no_EPOCHS'] = 20
-            else:
-                self.paramDict['no_EPOCHS'] = no_EPOCHS
+        if no_EPOCHS is None:
+            self.paramDict["no_EPOCHS"] = 100
+        else:
+            self.paramDict["no_EPOCHS"] = no_EPOCHS
 
-            if (no_of_params is None) or (no_of_params > 3):
-                raise Exception("Please provide a value for no_of_params or the value of it is too big")
-            else:
-                self.no_of_params = no_of_params
-            self.paramDict['no_of_params'] = self.no_of_params
-            self.paramDict['mul_cex_opt'] = mul_cex
-            self.paramDict['multi_label'] = False
+        if (no_of_params is None) or (no_of_params > 3):
+            raise Exception(
+                "Please provide a value for no_of_params or the value of it is too big"
+            )
+        else:
+            self.no_of_params = no_of_params
+        self.paramDict["no_of_params"] = self.no_of_params
+        self.paramDict["mul_cex_opt"] = mul_cex
+        self.paramDict["multi_label"] = multi_label
 
-            mut_weight = ""
-            if not model_with_weight:
-                mut_weight += str(False)
-                if model_type == 'sklearn':
-                    if model is None:
-                        if model_path == '':
-                            raise Exception("Please provide a classifier to check")
-                        else:
-                            self.model = load(model_path)
-                            self.paramDict['model_path'] = model_path
-                            self.paramDict['model_type'] = 'sklearn'
-
+        mut_weight = ""
+        if not model_with_weight:
+            mut_weight += str(False)
+            if model_type == "sklearn":
+                if model is None:
+                    if model_path == "":
+                        raise Exception("Please provide a classifier to check")
                     else:
-                        self.paramDict['model_type'] = 'sklearn'
-                        self.model = model
-                        dump(self.model, 'Model/MUT.joblib')
+                        self.model = load(model_path)
+                        self.paramDict["model_path"] = model_path
+                        self.paramDict["model_type"] = "sklearn"
 
                 else:
-                    raise Exception("Please provide the type of the model (Pytorch/sklearn)")
+                    self.paramDict["model_type"] = "sklearn"
+                    self.model = model
+                    dump(self.model, "Model/MUT.joblib")
 
             else:
-                dfWeight = local_load('MUTWeight')
-                pred_weight = dfWeight.values
-                pred_weight = pred_weight[:, :-1]
-                self.model = pred_weight
-                mut_weight += str(True)
+                self.paramDict["model_type"] = "sklearn"
+                self.model = model
+                dump(self.model, "Model/MUT.joblib")
 
-            local_save(mut_weight, 'MUTWeight', force_rewrite=True)
+        else:
+            dfWeight = local_load("MUTWeight")
+            pred_weight = dfWeight.values
+            pred_weight = pred_weight[:, :-1]
+            self.model = pred_weight
+            mut_weight += str(True)
 
-            if no_of_train is None:
-                self.no_of_train = 1000
+        local_save(mut_weight, "MUTWeight", force_rewrite=True)
+
+        if no_of_train is None:
+            self.no_of_train = 1000
+        else:
+            self.no_of_train = no_of_train
+        if train_data_available:
+            if train_data_loc == "":
+                raise Exception("Please provide the training data location")
             else:
-                self.no_of_train = no_of_train
-            if train_data_available:
-                if train_data_loc == '':
-                    raise Exception('Please provide the training data location')
+                if train_ratio is None:
+                    self.paramDict["train_ratio"] = 100
                 else:
-                    if train_ratio is None:
-                        self.paramDict['train_ratio'] = 100
-                    else:
-                        self.paramDict['train_ratio'] = train_ratio
-            self.paramDict['no_of_train'] = self.no_of_train
-            self.paramDict['train_data_available'] = train_data_available
-            self.paramDict['train_data_loc'] = train_data_loc
+                    self.paramDict["train_ratio"] = train_ratio
+        self.paramDict["no_of_train"] = self.no_of_train
+        self.paramDict["train_data_available"] = train_data_available
+        self.paramDict["train_data_loc"] = train_data_loc
 
-            try:
-                local_save(self.paramDict, 'param_dict', force_rewrite=True)
-            except IOError:
-                print("I/O error")
+        local_save(self.paramDict, "param_dict", force_rewrite=True)
+        df = pd.read_csv(HERE.joinpath("refactored2/Datasets/Adult.csv"))
+        feNameArr = df.columns.tolist()
+        feTypeArr = df.dtypes.apply(str).tolist()
+        minValArr = df.min().tolist()
+        maxValArr = df.max().tolist()
 
-            df = pd.read_csv(HERE.joinpath('refactored2/Datasets/Adult.csv'))
-            feNameArr = df.columns.tolist()
-            feTypeArr = df.dtypes.apply(str).tolist()
-            minValArr = df.min().tolist()
-            maxValArr = df.max().tolist()
+        local_save(df.dtypes.apply(str).to_dict(), "feNameType", force_rewrite=True)
 
-            local_save(df.dtypes.apply(str).to_dict(), 'feNameType', force_rewrite=True)
+        genDataObj = generateData(feNameArr, feTypeArr, minValArr, maxValArr)
+        genDataObj.funcGenerateTestData()
 
-            genDataObj = generateData(feNameArr, feTypeArr, minValArr, maxValArr)
-            genDataObj.funcGenerateTestData()
-            gen_oracle = makeOracleData(self.model)
-            gen_oracle.funcGenOracle()
+        genOrcl = makeOracleData(self.model)
+        genOrcl.funcGenOracle()
 
 
 class runChecker:
@@ -473,7 +476,7 @@ class runChecker:
                     print("Time out")
                     break
 
-        dfCexSet = pd.read_csv('files/CexSet.csv')
+        dfCexSet = local_load('CexSet')
         if (round(dfCexSet.shape[0] / self.no_of_params) > 0) and (count >= self.max_samples):
             self.addModelPred()
             print('Total number of cex found is:', round(dfCexSet.shape[0] / self.no_of_params))
@@ -584,65 +587,8 @@ def Assert(*args):
     tree = grammar.parse(args[0])
     assertVisitObj = assert2logic.AssertionVisitor()
     assertVisitObj.visit(tree)
-    paramDict = local_load('param_dict')
-    if paramDict['multi_label']:
-        start_time = time.time()
-        obj_multi = multiLabelMain.runChecker()
-        obj_multi.runPropCheck()
-        print('time required is', time.time() - start_time)
-    else:
-        obj_faircheck = runChecker()
-        start_time = time.time()
-        obj_faircheck.runPropCheck()
-        print('time required is', time.time() - start_time)
 
-    if os.path.exists('files/assumeStmnt.txt'):
-        os.remove('files/assumeStmnt.txt')
-    if os.path.exists('files/assertStmnt.txt'):
-        os.remove('files/assertStmnt.txt')
-
-    if os.path.exists('files/Cand-Set.csv'):
-        os.remove('files/Cand-Set.csv')
-    if os.path.exists('files/CandidateSet.csv'):
-        os.remove('files/CandidateSet.csv')
-    if os.path.exists('files/CandidateSetInst.csv'):
-        os.remove('files/CandidateSetInst.csv')
-    if os.path.exists('files/CandidateSetBranch.csv'):
-        os.remove('files/CandidateSetBranch.csv')
-
-    if os.path.exists('files/TestDataSMT.csv'):
-        os.remove('files/TestDataSMT.csv')
-    if os.path.exists('files/TestDataSMTMain.csv'):
-        os.remove('files/TestDataSMTMain.csv')
-
-    if os.path.exists('files/DecSmt.smt2'):
-        os.remove('files/DecSmt.smt2')
-    if os.path.exists('files/ToggleBranchSmt.smt2'):
-        os.remove('files/ToggleBranchSmt.smt2')
-    if os.path.exists('files/ToggleFeatureSmt.smt2'):
-        os.remove('files/ToggleFeatureSmt.smt2')
-    if os.path.exists('files/TreeOutput.txt'):
-        os.remove('files/TreeOutput.txt')
-
-    if os.path.exists('files/SampleFile.txt'):
-        os.remove('files/SampleFile.txt')
-    if os.path.exists('files/FinalOutput.txt'):
-        os.remove('files/FinalOutput.txt')
-    if os.path.exists('files/MUTWeight.txt'):
-        os.remove('files/MUTWeight.txt')
-    if os.path.exists('files/ConditionFile.txt'):
-        os.remove('files/ConditionFile.txt')
-
-    if os.path.exists('MUTWeight.csv'):
-        os.remove('MUTWeight.csv')
-    if os.path.exists('files/MUTWeight.txt'):
-        os.remove('files/MUTWeight.txt')
-    if os.path.exists('DNNSmt.smt2'):
-        os.remove('DNNSmt.smt2')
-
-    if os.path.exists('TestData.csv'):
-        os.remove('TestData.csv')
-    if os.path.exists('TestDataSet.csv'):
-        os.remove('TestDataSet.csv')
-    if os.path.exists('CandTestDataSet.csv'):
-        os.remove('CandTestDataSet.csv')
+    obj_faircheck = runChecker()
+    start_time = time.time()
+    obj_faircheck.runPropCheck()
+    print('time required is', time.time() - start_time)
