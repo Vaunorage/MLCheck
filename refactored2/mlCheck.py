@@ -162,24 +162,11 @@ class makeOracleData:
 
 class propCheck:
     def __init__(
-            self,
-            max_samples=None,
-            deadline=None,
-            model=None,
-            no_of_params=None,
-            mul_cex=False,
-            white_box_model=None,
-            no_of_class=None,
-            no_EPOCHS=None,
-            model_with_weight=False,
-            train_data_available=False,
-            train_data_loc="",
-            multi_label=False,
-            model_path="",
-            no_of_train=None,
-            train_ratio=None,
-            model_type=None,
-    ):
+            self, max_samples=None, deadline=None, model=None, no_of_params=None,
+            mul_cex=False, white_box_model=None, no_of_class=None, no_EPOCHS=None,
+            model_with_weight=False, train_data_available=False, train_data_loc="",
+            multi_label=False, model_path="", no_of_train=None, train_ratio=None,
+            model_type=None):
 
         self.paramDict = {}
         if max_samples is None:
