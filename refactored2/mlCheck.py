@@ -476,7 +476,6 @@ class runChecker:
         self.no_of_params = int(self.paramDict['no_of_params'])
         self.mul_cex = self.paramDict['mul_cex_opt']
         self.deadline = int(self.paramDict['deadlines'])
-        white_box = self.paramDict['white_box_model']
 
         self.runWithTree()
 
