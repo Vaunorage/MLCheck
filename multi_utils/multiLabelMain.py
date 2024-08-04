@@ -14,6 +14,8 @@ from refactored2 import trainDecTree, tree2Logic, ReadZ3Output
 from refactored2 import processCandCex, util
 from joblib import dump, load
 
+from refactored2.util import run_z3
+
 
 class generateData:
 
@@ -472,7 +474,8 @@ class runChecker:
                 tree2Logic.functree2LogicMain(tree, self.no_of_params)
                 util.storeAssumeAssert('DecSmt.smt2')
                 util.addSatOpt('DecSmt.smt2')
-                os.system(r"z3 DecSmt.smt2 > FinalOutput.txt")
+                # os.system(r"z3 DecSmt.smt2 > FinalOutput.txt")
+                run_z3('DecSmt', 'FinalOutput')
                 satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
                 if not satFlag:
                     if count == 0:

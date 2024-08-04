@@ -125,6 +125,7 @@ def funcCreateOracle(no_of_class, multi_label, model):
     data = df.values
     if multi_label:
         X = data[:, :-1]
+        X = dfTest.drop(self.paramDict['output_class_name'], axis=1)
         predict_class = model.predict(X)
         for i in range(0, X.shape[0]):
             df.loc[i, 'Class'] = predict_class[i]
@@ -150,3 +151,23 @@ def storeAssumeAssert(file_name, no_assumption=False):
         local_save(f2_content, file_name)
     f3_content = local_load('assertStmnt')
     local_save(f3_content, file_name)
+
+
+def update_dataframe_types(df: pd.DataFrame, categorical_cols=None) -> pd.DataFrame:
+
+    def infer_and_convert(series, col_name):
+        if categorical_cols and col_name in categorical_cols:
+            return series.astype('category')
+        try:
+            return pd.to_numeric(series, errors='coerce')
+        except ValueError:
+            pass
+        try:
+            return pd.to_datetime(series, errors='coerce')
+        except ValueError:
+            pass
+        if series.dropna().map(lambda x: isinstance(x, bool)).all():
+            return series.astype(bool)
+        return series.astype(str)
+
+    return df.apply(lambda series: infer_and_convert(series, series.name))

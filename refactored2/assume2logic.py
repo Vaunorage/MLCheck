@@ -7,7 +7,7 @@ from paths import HERE
 from refactored2 import util
 import sys
 
-from refactored2.util import local_save
+from refactored2.util import local_save, local_load
 
 
 class Stack:
@@ -143,9 +143,9 @@ class AssumptionVisitor(NodeVisitor):
         self.feIndex = 99999
         self.feValue = 0
         self.count = 0
-        self.df = pd.read_csv('files/OracleData.csv')
+        self.df = local_load('OracleData')
         self.feArr = []
-        self.noOfAttr = self.df.shape[1]
+        self.noOfAttr = self.df.columns.tolist()
         self.varMapDict = {}
         self.prefix_list = []
         self.varInd = False
@@ -200,7 +200,8 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr3(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.feValue) + "))"
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.feIndex + str(0)) + " " + str(
+            self.feValue) + "))"
         if self.logicOperator == 'not(=':
             assume_stmnt += ')'
         local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
@@ -208,7 +209,8 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr4(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.feValue) + "))"
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.feIndex + str(0)) + " " + str(
+            self.feValue) + "))"
         if self.logicOperator == 'not(=':
             assume_stmnt += ')'
         local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
@@ -216,7 +218,8 @@ class AssumptionVisitor(NodeVisitor):
     def visit_expr5(self, node, children):
         temp_expr = node.text
         self.replaceIndex(temp_expr)
-        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.df.columns.values[self.feIndex] + str(1)) + "))"
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.feIndex + str(0)) + " " + str(
+            self.feIndex + str(1)) + "))"
         if self.logicOperator == 'not(=':
             assume_stmnt += ')'
         local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
@@ -227,7 +230,8 @@ class AssumptionVisitor(NodeVisitor):
         else:
             temp_expr = node.text
             self.replaceIndex(temp_expr)
-            assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.df.columns.values[self.feIndex] + str(1)) + "))"
+            assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.feIndex + str(0)) + " " + str(
+                self.feIndex + str(1)) + "))"
             if self.logicOperator == 'not(=':
                 assume_stmnt += ')'
             local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
@@ -237,7 +241,8 @@ class AssumptionVisitor(NodeVisitor):
         self.storeMapping()
 
     def trojan_expr(self, node, children):
-        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.df.columns.values[self.feIndex] + str(0)) + " " + str(self.valueArr[self.feIndex]) + "))"
+        assume_stmnt = "(assert (" + self.logicOperator + " " + str(self.feIndex + str(0)) + " " + str(
+            self.valueArr[self.feIndex]) + "))"
         if self.logicOperator == 'not(=':
             assume_stmnt += ')'
         local_save(assume_stmnt, 'assumeStmnt', force_rewrite=False)
@@ -250,21 +255,21 @@ class AssumptionVisitor(NodeVisitor):
 
         for i in range(len(self.classVarList)):
             if self.classVarList[i] in temp_expr:
-                temp_expr = temp_expr.replace(str(self.classVarList[i]), str(self.df.columns.values[self.feIndex] + str(i)))
+                temp_expr = temp_expr.replace(str(self.classVarList[i]), str(self.feIndex + str(i)))
                 for j in range(len(self.varList)):
                     if self.varList[j] in self.classVarList[i]:
-                        self.varMapDict[self.varList[j]] = str(self.df.columns.values[self.feIndex] + str(i))
-                        self.feArr.append(self.df.columns.values[self.feIndex] + str(i))
+                        self.varMapDict[self.varList[j]] = str(self.feIndex + str(i))
+                        self.feArr.append(self.feIndex + str(i))
         self.varMapDict['no_assumption'] = False
         self.storeMapping()
 
     def getMapping(self):
         return self.varMapDict
 
-    def storeInd(self, index):
+    def storeInd(self, col):
         self.varInd = True
-        self.feIndex = index
-        self.checkValFeIndex()
+        self.feIndex = col
+        # self.checkValFeIndex()
 
     def storeArr(self, arr):
         self.valueArr = arr
@@ -276,11 +281,11 @@ class AssumptionVisitor(NodeVisitor):
 
         for i in range(len(self.classVarList)):
             if self.classVarList[i] in temp_expr1:
-                temp_expr1 = temp_expr1.replace(str(self.classVarList[i]), str(self.df.columns.values[self.feIndex] + str(i)))
+                temp_expr1 = temp_expr1.replace(str(self.classVarList[i]), str(self.feIndex + str(i)))
                 for j in range(len(self.varList)):
                     if self.varList[j] in self.classVarList[i]:
-                        self.varMapDict[self.varList[j]] = str(self.df.columns.values[self.feIndex] + str(i))
-                        self.feArr.append(self.df.columns.values[self.feIndex] + str(i))
+                        self.varMapDict[self.varList[j]] = str(self.feIndex + str(i))
+                        self.feArr.append(self.feIndex + str(i))
 
         self.varMapDict['no_assumption'] = False
         self.storeMapping()
@@ -348,8 +353,8 @@ class AssumptionVisitor(NodeVisitor):
         local_save(logic_stmnt, 'assumeStmnt', force_rewrite=False)
 
     def checkValFeIndex(self):
-        if self.feIndex > self.noOfAttr:
-            raise Exception("Feature Index exceed maximum number of features in the data")
+        if self.feIndex not in self.noOfAttr:
+            raise Exception("Feature not in original columns")
 
     def checkIndexConstncy(self):
         digit1 = int(re.search(r'\d+', self.classVarList[0]).group(0))

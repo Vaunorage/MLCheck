@@ -153,24 +153,23 @@ def funcGenSMTFairness(dfT, no_of_instances):
 
     f = ''
     for j in range(0, no_of_instances):
-        for i in range(0, dfT.columns.values.shape[0] - 1):
-            tempStr = dfT.columns.values[i]
-            fe_type = feName_type[tempStr]
+        for col in dfT.columns.tolist():
+            fe_type = feName_type[col]
 
             if ('int' in fe_type):
-                f += "(declare-fun " + tempStr + str(j) + " () Int)"
+                f += "(declare-fun " + col + str(j) + " () Int)"
                 f += '\n'
                 f += '\n'
             elif ('float' in fe_type):
-                f += "(declare-fun " + tempStr + str(j) + " () Real)"
+                f += "(declare-fun " + col + str(j) + " () Real)"
                 f += '\n'
                 f += '\n'
         f += "; " + str(j) + "th element"
         f += '\n'
 
-    for i in range(0, no_of_instances):
-        f += "(declare-fun Class" + str(i) + " () Int)"
-        f += '\n'
+    # for i in range(0, no_of_instances):
+    #     f += "(declare-fun Class" + str(i) + " () Int)"
+    #     f += '\n'
 
     # Writing the functions for computing absolute integer & real value
     f += '(define-fun absoluteInt ((x Int)) Int \n'

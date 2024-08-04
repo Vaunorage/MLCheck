@@ -36,7 +36,7 @@ def funcCheckDuplicate(pairfirst, pairsecond, testMatrix):
             if (pairsecondList == testDataList[i + 1]):
                 return True
 
-    dfTest = pd.read_csv('files/TestSet.csv')
+    dfTest = local_load('TestSet')
     dataTest = dfTest.values
     dataTestList = dataTest.tolist()
     for i in range(0, len(dataTestList) - 1):

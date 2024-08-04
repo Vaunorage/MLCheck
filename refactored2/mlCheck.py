@@ -5,110 +5,115 @@ from parsimonious.nodes import NodeVisitor
 from parsimonious.grammar import Grammar
 import re
 import torch
-import os
 
-from paths import HERE
 from refactored2 import trainDecTree, tree2Logic, ReadZ3Output, processCandCex, util, assume2logic, assert2logic
 from joblib import dump, load
 import time
 
-from refactored2.util import local_save, local_load, file_exists, get_file_path
+from refactored2.util import local_save, local_load, file_exists, run_z3
 
 
 class generateData:
+    def __init__(self, df, categorical_columns):
+        self.categorical_columns = categorical_columns
+        self.df = df
+        self.param_dict = local_load('param_dict')
+        self.feature_info = self.analyze_data()
 
-    def __init__(self, feNameArr, feTypeArr, minValArr, maxValArr):
-        self.nameArr = feNameArr
-        self.typeArr = feTypeArr
-        self.minArr = minValArr
-        self.maxArr = maxValArr
-        self.paramDict = local_load('param_dict')
-        # print('ss')
+    def analyze_data(self):
+        """ Analyze the original data to extract distribution information. """
+        feature_info = {}
+        for column in self.df.columns:
+            dtype = self.df[column].dtype
+            if column in self.categorical_columns:
+                dtype = 'categorical'
 
-    def binSearch(self, alist, item):
-        if len(alist) == 0:
-            return False
-        else:
-            midpoint = len(alist) // 2
-            if alist[midpoint] == item:
-                return True
+            if pd.api.types.is_numeric_dtype(dtype):
+                feature_info[column] = {
+                    'mean': self.df[column].mean(),
+                    'std': self.df[column].std(),
+                    'min': self.df[column].min(),
+                    'max': self.df[column].max(),
+                    'distribution': 'normal'  # Placeholder; you can implement actual distribution fitting
+                }
+            elif column in self.categorical_columns:
+                feature_info[column] = {
+                    'categories': self.df[column].value_counts(normalize=True).to_dict(),
+                    'most_frequent': self.df[column].mode()[0] if not self.df[column].mode().empty else None
+                }
+            elif pd.api.types.is_datetime64_any_dtype(dtype):
+                feature_info[column] = {
+                    'min_date': self.df[column].min(),
+                    'max_date': self.df[column].max(),
+                    'range': self.df[column].max() - self.df[column].min()
+                }
+            elif pd.api.types.is_bool_dtype(dtype):
+                feature_info[column] = {
+                    'true_count': self.df[column].sum(),
+                    'false_count': len(self.df[column]) - self.df[column].sum(),
+                    'true_ratio': self.df[column].mean()
+                }
             else:
-                if item < alist[midpoint]:
-                    return self.binSearch(alist[:midpoint], item)
-                else:
-                    return self.binSearch(alist[midpoint + 1:], item)
+                feature_info[column] = {
+                    'type': str(dtype),
+                    'info': 'Data type not specifically handled'
+                }
+        return feature_info
 
-    # Function to generate a new sample
-    def funcGenData(self):
-        tempData = np.zeros((1, len(self.nameArr)), dtype=object)
-        # f = open('files/MUTWeight.txt', 'r')
+    def generate_sample(self):
+        sample_data = []
         weight_content = local_load('MUTWeight')
 
-        for k in range(0, len(self.nameArr)):
-            fe_type = self.typeArr[k]
-            if 'int' in fe_type:
-                if weight_content == 'False':
-                    tempData[0][k] = rd.randint(self.minArr[k], self.maxArr[k])
+        for column, info in self.feature_info.items():
+            if 'distribution' in info:
+                if weight_content == 'False\n':
+                    value = np.random.normal(info['mean'], info['std'])
                 else:
-                    tempData[0][k] = rd.randint(-99999999999, 9999999999999999)
+                    value = np.random.uniform(info['min'], info['max'])
+                value = np.clip(value, info['min'], info['max'])  # Ensure value is within original range
             else:
-                if weight_content == 'False':
-                    tempData[0][k] = round(rd.uniform(0, self.maxArr[k]), 1)
-                else:
-                    tempData[0][k] = round(rd.uniform(-99999999999, 9999999999999), 3)
+                categories = list(info['categories'].keys())
+                probabilities = list(info['categories'].values())
+                value = np.random.choice(categories, p=probabilities)
 
-        return tempData
+            sample_data.append(value)
 
-    # Function to check whether a newly generated sample already exists in the list of samples
-    def funcCheckUniq(self, matrix, row):
-        row_temp = row.tolist()
-        matrix_new = matrix.tolist()
-        if row_temp in matrix_new:
-            return True
-        else:
-            return False
+        return np.array(sample_data, dtype=object).reshape(1, -1)
 
-    # Function to combine several steps
-    def funcGenerateTestData(self):
-        tst_pm = int(self.paramDict['no_of_train'])
-        testMatrix = np.zeros(((tst_pm + 1), len(self.nameArr)), dtype=object)
+    @staticmethod
+    def is_duplicate(matrix, row):
+        return row.tolist() in matrix.tolist()
+
+    def generate_test_data(self):
+        num_samples = int(self.param_dict['no_of_train'])
+        test_matrix = np.zeros((num_samples + 1, len(self.df.columns)), dtype=object)
 
         i = 0
-        while i <= tst_pm:
-            temp = self.funcGenData()
-            flg = self.funcCheckUniq(testMatrix, temp)
-            if not flg:
-                for j in range(0, len(self.nameArr)):
-                    testMatrix[i][j] = temp[0][j]
-                i = i + 1
+        while i <= num_samples:
+            sample = self.generate_sample()
+            if not self.is_duplicate(test_matrix, sample):
+                test_matrix[i] = sample[0]
+                i += 1
 
-        local_save(pd.DataFrame(testMatrix, columns=self.nameArr), 'TestingData', force_rewrite=True)
+        local_save(pd.DataFrame(test_matrix, columns=self.df.columns), 'TestingData', force_rewrite=True)
 
-        if self.paramDict['train_data_available']:
-            dfTrainData = pd.read_csv(self.paramDict['train_data_loc'])
-            self.generateTestTrain(dfTrainData, int(self.paramDict['train_ratio']))
+        if self.param_dict['train_data_available']:
+            df_train_data = pd.read_csv(self.param_dict['train_data_loc'])
+            self.generate_test_train(df_train_data, int(self.param_dict['train_ratio']))
 
-    def generateTestTrain(self, dfTrainData, train_ratio):
-        tst_pm = round((train_ratio * dfTrainData.shape[0]) / 100)
-        data = dfTrainData.values
-        testMatrix = np.zeros(((tst_pm + 1), dfTrainData.shape[1]))
-        testCount = 0
-        ratioTrack = []
-        noOfRows = dfTrainData.shape[0]
-        while testCount <= tst_pm:
-            ratio = rd.randint(0, noOfRows - 1)
-            if testCount >= 1:
-                flg = self.binSearch(ratioTrack, ratio)
-                if not flg:
-                    ratioTrack.append(ratio)
-                    testMatrix[testCount] = data[ratio]
-                    testCount = testCount + 1
-            if testCount == 0:
-                ratioTrack.append(ratio)
-                testMatrix[testCount] = data[ratio]
-                testCount = testCount + 1
+    def generate_test_train(self, df_train_data, train_ratio):
+        num_samples = round((train_ratio * df_train_data.shape[0]) / 100)
+        data = df_train_data.values
+        test_matrix = np.zeros((num_samples + 1, df_train_data.shape[1]))
+        selected_indices = set()
 
-        local_save(pd.DataFrame(testMatrix), 'TestingData')
+        while len(selected_indices) <= num_samples:
+            index = rd.randint(0, df_train_data.shape[0] - 1)
+            if index not in selected_indices:
+                selected_indices.add(index)
+                test_matrix[len(selected_indices) - 1] = data[index]
+
+        local_save(pd.DataFrame(test_matrix), 'TestingData')
 
 
 class dataFrameCreate(NodeVisitor):
@@ -136,134 +141,86 @@ class dataFrameCreate(NodeVisitor):
         self.feMaxVal = digit
 
 
-class makeOracleData:
+class MakeOracleData:
 
     def __init__(self, model):
         self.model = model
-        self.paramDict = local_load('param_dict')
+        self.param_dict = local_load('param_dict')
 
-    def funcGenOracle(self):
-        dfTest = local_load('TestingData')
-        dataTest = dfTest.values
-        predict_list = np.zeros((1, dfTest.shape[0]))
-        X = dataTest[:, :-1]
+    def generate_oracle(self):
+        df_test = local_load('TestingData')
+        X_test = df_test.drop(columns='Class').values
 
-        if 'numpy.ndarray' in str(type(self.model)):
-            for i in range(0, X.shape[0]):
-                predict_list[0][i] = np.sign(np.dot(self.model, X[i]))
-                dfTest.loc[i, 'Class'] = int(predict_list[0][i])
-
-        else:
-            predict_class = self.model.predict(X)
-            for i in range(0, X.shape[0]):
-                dfTest.loc[i, 'Class'] = int(predict_class[i])
-        local_save(dfTest, 'OracleData', force_rewrite=True)
+        df_test['Class'] = self.model.predict(X_test)
+        local_save(df_test, 'OracleData', force_rewrite=True)
 
 
 class propCheck:
-    def __init__(
-            self, max_samples=None, deadline=None, model=None, no_of_params=None,
-            mul_cex=False, white_box_model=None, no_of_class=None, no_EPOCHS=None,
-            model_with_weight=False, train_data_available=False, train_data_loc="",
-            multi_label=False, model_path="", no_of_train=None, train_ratio=None,
-            model_type=None):
+    def __init__(self, output_class_name, categorical_columns, max_samples=1000, deadline=500000, model=None,
+                 no_of_params=None, mul_cex=False, white_box_model="Decision tree", no_of_class=None,
+                 no_EPOCHS=100, train_data_available=False,
+                 train_data_loc="", multi_label=False, model_path="", no_of_train=1000,
+                 train_ratio=100):
 
-        self.paramDict = {}
-        if max_samples is None:
-            self.max_samples = 1000
-        else:
-            self.max_samples = max_samples
-        self.paramDict["max_samples"] = self.max_samples
+        self.paramDict = {
+            "max_samples": max_samples,
+            "deadlines": deadline,
+            "white_box_model": white_box_model,
+            "no_of_class": no_of_class,
+            "no_EPOCHS": no_EPOCHS,
+            "no_of_params": no_of_params,
+            "mul_cex_opt": mul_cex,
+            "multi_label": multi_label,
+            "no_of_train": no_of_train,
+            "train_data_available": train_data_available,
+            "train_data_loc": train_data_loc,
+            "train_ratio": train_ratio,
+            'output_class_name': output_class_name,
+            'categorical_columns': categorical_columns
+        }
 
-        if deadline is None:
-            self.deadline = 500000
-        else:
-            self.deadline = deadline
-        self.paramDict["deadlines"] = self.deadline
+        self._validate_params(no_of_params)
+        self.model = self._initialize_model(model, model_path)
+        self._handle_training_data(train_data_available, train_data_loc, train_ratio)
+        local_save(self.paramDict, "param_dict", force_rewrite=True)
+        self._generate_data_and_oracle(train_data_loc)
 
-        if white_box_model is None:
-            self.white_box_model = "Decision tree"
-        else:
-            self.white_box_model = white_box_model
-        self.paramDict["white_box_model"] = self.white_box_model
-        self.paramDict["no_of_class"] = no_of_class
+    def _validate_params(self, no_of_params):
+        if no_of_params is None or no_of_params > 3:
+            raise ValueError("Please provide a valid value for no_of_params (<= 3).")
 
-        if no_EPOCHS is None:
-            self.paramDict["no_EPOCHS"] = 100
-        else:
-            self.paramDict["no_EPOCHS"] = no_EPOCHS
-
-        if (no_of_params is None) or (no_of_params > 3):
-            raise Exception(
-                "Please provide a value for no_of_params or the value of it is too big"
-            )
-        else:
-            self.no_of_params = no_of_params
-        self.paramDict["no_of_params"] = self.no_of_params
-        self.paramDict["mul_cex_opt"] = mul_cex
-        self.paramDict["multi_label"] = multi_label
-
-        mut_weight = ""
-        if not model_with_weight:
-            mut_weight += str(False)
-            if model_type == "sklearn":
-                if model is None:
-                    if model_path == "":
-                        raise Exception("Please provide a classifier to check")
-                    else:
-                        self.model = load(model_path)
-                        self.paramDict["model_path"] = model_path
-                        self.paramDict["model_type"] = "sklearn"
-
-                else:
-                    self.paramDict["model_type"] = "sklearn"
-                    self.model = model
-                    dump(self.model, "Model/MUT.joblib")
-
+    def _initialize_model(self, model, model_path):
+        mut_weight = "False"
+        if model is None:
+            if not model_path:
+                raise ValueError("Please provide a classifier to check.")
             else:
+                model = load(model_path)
+                self.paramDict["model_path"] = model_path
                 self.paramDict["model_type"] = "sklearn"
-                self.model = model
-                dump(self.model, "Model/MUT.joblib")
-
         else:
-            dfWeight = local_load("MUTWeight")
-            pred_weight = dfWeight.values
-            pred_weight = pred_weight[:, :-1]
-            self.model = pred_weight
-            mut_weight += str(True)
+            self.paramDict["model_type"] = "sklearn"
+            dump(model, "Model/MUT.joblib")
 
         local_save(mut_weight, "MUTWeight", force_rewrite=True)
+        return model
 
-        if no_of_train is None:
-            self.no_of_train = 1000
-        else:
-            self.no_of_train = no_of_train
+    def _handle_training_data(self, train_data_available, train_data_loc, train_ratio):
         if train_data_available:
-            if train_data_loc == "":
-                raise Exception("Please provide the training data location")
-            else:
-                if train_ratio is None:
-                    self.paramDict["train_ratio"] = 100
-                else:
-                    self.paramDict["train_ratio"] = train_ratio
-        self.paramDict["no_of_train"] = self.no_of_train
-        self.paramDict["train_data_available"] = train_data_available
-        self.paramDict["train_data_loc"] = train_data_loc
+            if not train_data_loc:
+                raise ValueError("Please provide the training data location.")
+            self.paramDict["train_ratio"] = train_ratio
 
-        local_save(self.paramDict, "param_dict", force_rewrite=True)
-        df = pd.read_csv(HERE.joinpath("refactored2/Datasets/Adult.csv"))
-        feNameArr = df.columns.tolist()
-        feTypeArr = df.dtypes.apply(str).tolist()
-        minValArr = df.min().tolist()
-        maxValArr = df.max().tolist()
+    def _generate_data_and_oracle(self, train_data_loc):
+        df = pd.read_csv(train_data_loc)
 
         local_save(df.dtypes.apply(str).to_dict(), "feNameType", force_rewrite=True)
 
-        genDataObj = generateData(feNameArr, feTypeArr, minValArr, maxValArr)
-        genDataObj.funcGenerateTestData()
+        genDataObj = generateData(df, self.paramDict['categorical_columns'])
+        genDataObj.generate_test_data()
 
-        genOrcl = makeOracleData(self.model)
-        genOrcl.funcGenOracle()
+        genOrcl = MakeOracleData(self.model)
+        genOrcl.generate_oracle()
 
 
 class runChecker:
@@ -291,8 +248,7 @@ class runChecker:
 
     def funcCreateOracle(self):
         dfTest = local_load('TestingData')
-        data = dfTest.values
-        X = data[:, :-1]
+        X = dfTest.drop(self.paramDict['output_class_name'], axis=1)
         if not self.MUTcontent:
             predict_class = self.model.predict(X)
             for i in range(0, X.shape[0]):
@@ -342,8 +298,7 @@ class runChecker:
 
     def funcPrediction(self, X, dfCand, testIndx):
         if not self.MUTcontent:
-            if not self.MUTcontent:
-                return self.model.predict(util.convDataInst(X, dfCand, testIndx, 1))
+            return self.model.predict(util.convDataInst(X, dfCand, testIndx, 1))
         else:
             temp_class = np.sign(np.dot(self.model, X[testIndx]))
             if temp_class < 0:
@@ -353,13 +308,12 @@ class runChecker:
 
     def addModelPred(self):
         dfCexSet = local_load('CexSet')
-        dataCex = dfCexSet.values
+        X = dfCexSet.drop(self.paramDict['output_class_name'], axis=1)
         if not self.MUTcontent:
-            predict_class = self.model.predict(dataCex[:, :-1])
+            predict_class = self.model.predict(X)
             for i in range(0, dfCexSet.shape[0]):
                 dfCexSet.loc[i, 'Class'] = predict_class[i]
         else:
-            X = dataCex[:, :-1]
             predict_list = np.zeros((1, dfCexSet.shape[0]))
             for i in range(0, X.shape[0]):
                 predict_list[0][i] = np.sign(np.dot(self.model, X[i]))
@@ -381,12 +335,11 @@ class runChecker:
 
         while count < self.max_samples:
             print('count is:', count)
-            tree = trainDecTree.functrainDecTree()
+            tree = trainDecTree.train_decision_tree()
             tree2Logic.functree2LogicMain(tree, self.no_of_params)
             util.storeAssumeAssert('DecSmt')
             util.addSatOpt('DecSmt')
-            os.system(
-                f"z3 {get_file_path('DecSmt').as_posix()} > {get_file_path('FinalOutput', return_hypothetical=True, default_ext='.txt').as_posix()}")
+            run_z3('DecSmt', 'FinalOutput')
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
                 if count == 0:
@@ -423,10 +376,8 @@ class runChecker:
                             return 0
                 else:
                     count = count + round(dfCand.shape[0] / self.no_of_params)
-
-                data = dfCand.values
-                X = data[:, :-1]
-                y = data[:, -1]
+                X = dfCand.drop(self.paramDict['output_class_name'], axis=1).values
+                y = dfCand[self.paramDict['output_class_name']]
                 if dfCand.shape[0] % self.no_of_params == 0:
                     arr_length = dfCand.shape[0]
                 else:
@@ -454,7 +405,7 @@ class runChecker:
                             self.addModelPred()
                             return 1
                     else:
-                        util.funcAdd2Oracle(temp_add_oracle)
+                        local_save(dfCand, 'TestingData')
 
                 if retrain_flag:
                     self.funcCreateOracle()
@@ -521,8 +472,7 @@ def Assume(*args):
     value       = ~"\d+"
     num_log     = ~"[+-]?([0-9]*[.])?[0-9]+"
     number      = ~"[+-]?([0-9]*[.])?[0-9]+"
-    """
-    )
+    """)
 
     tree = grammar.parse(args[0])
     assumeVisitObj = assume2logic.AssumptionVisitor()

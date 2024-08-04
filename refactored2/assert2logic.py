@@ -18,7 +18,7 @@ class AssertionVisitor(NodeVisitor):
         self.varMap = {}
         self.feVal = 0
         self.count = 0
-        self.dfOracle = pd.read_csv('files/OracleData.csv')
+        self.dfOracle = local_load('OracleData')
         self.mydict = local_load('dict')
         self.paramDict = local_load('param_dict')
 

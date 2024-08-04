@@ -5,7 +5,7 @@ import os
 from refactored2 import ReadZ3Output
 from sklearn.tree import _tree
 
-from refactored2.util import local_load, local_save
+from refactored2.util import local_load, local_save, run_z3
 
 
 def getDataType(value, dfOrig, i):
@@ -256,7 +256,7 @@ def funcPrunBranch(dfOrig, tree_model):
             return
         for i in range(len(condition_file.splitlines())):
             funcAddCond2File(i)
-            os.system(r"z3 files/ToggleBranchSmt.txt > files/FinalOutput.txt")
+            run_z3('ToggleBranchSmt', 'FinalOutput')
             satFlag = ReadZ3Output.funcConvZ3OutToData(dfOrig)
 
             if (satFlag == True):

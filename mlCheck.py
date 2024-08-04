@@ -10,6 +10,8 @@ from parsimonious.grammar import Grammar
 import re
 import torch
 import os
+
+from refactored2.util import run_z3
 from utils import trainDecTree, tree2Logic, ReadZ3Output, processCandCex, util, assume2logic, assert2logic
 from utils import trainDNN, DNN2logic
 from joblib import dump, load
@@ -640,7 +642,8 @@ class runChecker:
             obj_dnl.funcDNN2logic()
             util.storeAssumeAssert('DNNSmt.smt2')
             util.addSatOpt('DNNSmt.smt2')
-            os.system(r"z3 DNNSmt.smt2 > FinalOutput.txt")
+            # os.system(r"z3 DNNSmt.smt2 > FinalOutput.txt")
+            run_z3('DNNSmt', 'FinalOutput')
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
                 if count == 0:
@@ -747,7 +750,8 @@ class runChecker:
             tree2Logic.functree2LogicMain(tree, self.no_of_params)
             util.storeAssumeAssert('DecSmt.smt2')
             util.addSatOpt('DecSmt.smt2')
-            os.system(r"z3 DecSmt.smt2 > FinalOutput.txt")
+            # os.system(r"z3 DecSmt.smt2 > FinalOutput.txt")
+            run_z3('DecSmt', 'FinalOutput')
             satFlag = ReadZ3Output.funcConvZ3OutToData(self.df)
             if not satFlag:
                 if count == 0:
